@@ -38,14 +38,29 @@
     #playing { position: relative; background: #111; }
     .hud { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); z-index: 100; display: flex; gap: 8px; }
     .hud-chip { background: #fff; border-radius: 6px; padding: 6px 14px; font-size: 0.78rem; font-weight: 700; box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
-    .hud-chip.timer { min-width: 52px; text-align: center; transition: background 0.3s, color 0.3s; }
-    .hud-chip.timer.warn { background: #fef3c7; color: #b45309; }
-    .hud-chip.timer.danger { background: #fee2e2; color: #dc2626; animation: pulse 0.5s ease infinite alternate; }
-    @keyframes pulse { to { background: #fca5a5; } }
-    .timer-bar { position: absolute; top: 0; left: 0; right: 0; height: 3px; z-index: 101; }
-    .timer-fill { height: 100%; background: #1a1a1a; transition: width 1s linear, background 0.3s; }
-    .timer-fill.warn { background: #f59e0b; }
-    .timer-fill.danger { background: #ef4444; }
+    .timer-box {
+      position: absolute; top: 14px; left: 14px; z-index: 100;
+      background: #fff; border-radius: 10px; padding: 6px 10px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+      display: flex; align-items: center; gap: 8px;
+      transition: background 0.3s, box-shadow 0.3s;
+    }
+    .timer-box .timer-text { font-size: 1.1rem; font-weight: 700; min-width: 40px; text-align: center; }
+    .timer-box .timer-track { width: 100px; height: 8px; background: #eee; border-radius: 4px; overflow: hidden; }
+    .timer-box .timer-fill { height: 100%; background: #1a1a1a; border-radius: 4px; transition: width 1s linear, background 0.3s; }
+    .timer-box.warn { background: #fffbeb; }
+    .timer-box.warn .timer-text { color: #b45309; }
+    .timer-box.warn .timer-fill { background: #f59e0b; }
+    .timer-box.danger { background: #fef2f2; box-shadow: 0 2px 16px rgba(220,38,38,0.3); }
+    .timer-box.danger .timer-text { color: #dc2626; }
+    .timer-box.danger .timer-fill { background: #ef4444; }
+    .red-vignette {
+      position: absolute; inset: 0; z-index: 99; pointer-events: none; opacity: 0;
+      background: radial-gradient(ellipse at center, transparent 50%, rgba(220,38,38,0.4) 100%);
+      transition: opacity 0.3s;
+    }
+    .red-vignette.active { opacity: 1; animation: vignetteFlash 0.6s ease infinite alternate; }
+    @keyframes vignetteFlash { from { opacity: 0.7; } to { opacity: 1; } }
     .video-bg { position: absolute; inset: 0; z-index: 1; }
     .video-bg video { width: 100%; height: 100%; object-fit: cover; }
 
@@ -192,10 +207,13 @@
   </div>
 
   <div id="playing" class="screen">
-    <div class="timer-bar"><div class="timer-fill" id="timerFill"></div></div>
+    <div class="red-vignette" id="redVignette"></div>
+    <div class="timer-box" id="timerBox">
+      <span class="timer-text" id="hudTimer">0:30</span>
+      <div class="timer-track"><div class="timer-fill" id="timerFill"></div></div>
+    </div>
     <div class="hud">
       <div class="hud-chip" id="hudRound">Round 1 of 5</div>
-      <div class="hud-chip timer" id="hudTimer">0:30</div>
       <div class="hud-chip" id="hudScore">0 pts</div>
     </div>
     <div class="video-bg"><video id="gameVideo" autoplay loop muted playsinline></video></div>
@@ -292,20 +310,24 @@
       }, 1000);
     }
 
-    function stopTimer() { clearInterval(timerInterval); }
+    function stopTimer() {
+      clearInterval(timerInterval);
+      document.getElementById('redVignette').classList.remove('active');
+    }
 
     function updateTimerDisplay() {
-      const el = document.getElementById('hudTimer');
+      const text = document.getElementById('hudTimer');
       const fill = document.getElementById('timerFill');
+      const box = document.getElementById('timerBox');
+      const vig = document.getElementById('redVignette');
       const pct = (timeLeft / ROUND_TIME) * 100;
-      const m = Math.floor(timeLeft / 60);
-      const s = timeLeft % 60;
-      el.textContent = m + ':' + (s < 10 ? '0' : '') + s;
+      const s = timeLeft;
+      text.textContent = s;
 
-      el.classList.remove('warn', 'danger');
-      fill.classList.remove('warn', 'danger');
-      if (timeLeft <= 5) { el.classList.add('danger'); fill.classList.add('danger'); }
-      else if (timeLeft <= 10) { el.classList.add('warn'); fill.classList.add('warn'); }
+      box.classList.remove('warn', 'danger');
+      vig.classList.remove('active');
+      if (s <= 5) { box.classList.add('danger'); vig.classList.add('active'); }
+      else if (s <= 10) { box.classList.add('warn'); }
 
       fill.style.width = pct + '%';
     }
