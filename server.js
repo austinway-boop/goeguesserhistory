@@ -13,7 +13,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 const HF_AUTH = `Key ${process.env.HIGGSFIELD_KEY}:${process.env.HIGGSFIELD_SECRET}`;
 const HF_BASE = 'https://platform.higgsfield.ai';
 const IMG_MODEL = 'nano-banana-pro';
-const VID_MODEL = 'bytedance/seedance/v1/pro/image-to-video';
+const VID_MODEL = 'kling-video/v2.1/pro/image-to-video';
 const CACHE_DIR = path.join(__dirname, 'cache');
 const CACHE_INDEX = path.join(CACHE_DIR, 'index.json');
 
