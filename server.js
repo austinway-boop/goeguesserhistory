@@ -10,9 +10,10 @@ const app = express();
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-const FAL_KEY = process.env.FAL_KEY;
-const FAL_QUEUE_URL = 'https://queue.fal.run';
-const VIDEO_MODEL = 'fal-ai/kling-video/v2/master/text-to-video';
+const HF_AUTH = `Key ${process.env.HIGGSFIELD_KEY}:${process.env.HIGGSFIELD_SECRET}`;
+const HF_BASE = 'https://platform.higgsfield.ai';
+const IMG_MODEL = 'nano-banana-pro';
+const VID_MODEL = 'higgsfield-ai/dop/standard';
 const CACHE_DIR = path.join(__dirname, 'cache');
 const CACHE_INDEX = path.join(CACHE_DIR, 'index.json');
 
@@ -176,56 +177,64 @@ function pickRandomEvents(count) {
 
 // ─── Video Generation ───
 
-async function submitVideoGeneration(prompt) {
-  const body = {
-    prompt,
-    duration: '10',
-    aspect_ratio: '16:9',
-    negative_prompt: 'blur, distort, low quality, text, watermark, logo, modern elements visible in historical scenes, anachronistic objects, wrong time period clothing, cartoon, anime, illustration',
-    cfg_scale: 0.5
-  };
-
-  const response = await fetch(`${FAL_QUEUE_URL}/${VIDEO_MODEL}`, {
-    method: 'POST',
-    headers: { 'Authorization': `Key ${FAL_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
-  });
-
-  const data = await response.json();
-  if (!response.ok) throw new Error(data.detail || 'fal.ai API error');
-  return data;
-}
-
-async function pollVideoStatus(statusUrl, responseUrl) {
-  const maxPolls = 180;
-  let consecutiveErrors = 0;
+async function hfPoll(requestId) {
+  const maxPolls = 200;
+  let errors = 0;
 
   for (let i = 0; i < maxPolls; i++) {
     await new Promise(r => setTimeout(r, 3000));
     try {
-      const statusRes = await fetch(statusUrl, { headers: { 'Authorization': `Key ${FAL_KEY}` } });
-      const statusData = await statusRes.json();
-      consecutiveErrors = 0;
-
-      if (statusData.status === 'COMPLETED') {
-        const resultRes = await fetch(responseUrl, { headers: { 'Authorization': `Key ${FAL_KEY}` } });
-        const resultData = await resultRes.json();
-        const videoUrl = resultData.video?.url || resultData.video_url || resultData.output?.url;
-        if (!videoUrl) {
-          console.error('Unexpected result format:', JSON.stringify(resultData).substring(0, 500));
-          throw new Error('No video URL in result');
-        }
-        return videoUrl;
-      } else if (statusData.status === 'FAILED') {
-        throw new Error('Video generation failed: ' + (statusData.error || JSON.stringify(statusData)));
-      }
+      const res = await fetch(`${HF_BASE}/requests/${requestId}/status`, {
+        headers: { 'Authorization': HF_AUTH }
+      });
+      const d = await res.json();
+      errors = 0;
+      if (d.status === 'completed') return d;
+      if (d.status === 'failed' || d.status === 'nsfw') throw new Error(`Generation ${d.status}`);
     } catch (err) {
-      if (err.message.includes('generation failed') || err.message.includes('No video URL')) throw err;
-      consecutiveErrors++;
-      if (consecutiveErrors >= 10) throw new Error(`Too many poll errors: ${err.message}`);
+      if (err.message.includes('Generation')) throw err;
+      errors++;
+      if (errors >= 10) throw new Error(`Poll errors: ${err.message}`);
     }
   }
-  throw new Error('Video generation timed out');
+  throw new Error('Timed out');
+}
+
+async function generateImageThenVideo(prompt) {
+  console.log(`[Higgsfield] Step 1: Generating image...`);
+  const imgRes = await fetch(`${HF_BASE}/${IMG_MODEL}`, {
+    method: 'POST',
+    headers: { 'Authorization': HF_AUTH, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt, aspect_ratio: '16:9', resolution: '1k' })
+  });
+  const imgTask = await imgRes.json();
+  if (!imgRes.ok) throw new Error(imgTask.detail || JSON.stringify(imgTask));
+  console.log(`[Higgsfield] Image queued: ${imgTask.request_id}`);
+
+  const imgResult = await hfPoll(imgTask.request_id);
+  const imageUrl = imgResult.images?.[0]?.url;
+  if (!imageUrl) throw new Error('No image URL in result');
+  console.log(`[Higgsfield] Image ready: ${imageUrl.substring(0, 60)}...`);
+
+  console.log(`[Higgsfield] Step 2: Generating video from image...`);
+  const vidRes = await fetch(`${HF_BASE}/${VID_MODEL}`, {
+    method: 'POST',
+    headers: { 'Authorization': HF_AUTH, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      image_url: imageUrl,
+      prompt: 'Cinematic slow camera movement through the scene, subtle motion and atmosphere, photorealistic',
+      duration: 10
+    })
+  });
+  const vidTask = await vidRes.json();
+  if (!vidRes.ok) throw new Error(vidTask.detail || JSON.stringify(vidTask));
+  console.log(`[Higgsfield] Video queued: ${vidTask.request_id}`);
+
+  const vidResult = await hfPoll(vidTask.request_id);
+  const videoUrl = vidResult.video?.url;
+  if (!videoUrl) throw new Error('No video URL in result');
+  console.log(`[Higgsfield] Video ready`);
+  return videoUrl;
 }
 
 async function generateVideo(round, retries = 2) {
@@ -242,9 +251,7 @@ async function generateVideo(round, retries = 2) {
       round.videoStatus = 'generating';
       round.videoError = null;
       console.log(`[Round ${round.event.id}] Generating (attempt ${attempt + 1})...`);
-      const queueData = await submitVideoGeneration(round.event.prompt);
-      console.log(`[Round ${round.event.id}] Queued: ${queueData.request_id}`);
-      const remoteUrl = await pollVideoStatus(queueData.status_url, queueData.response_url);
+      const remoteUrl = await generateImageThenVideo(round.event.prompt);
       const localUrl = await downloadAndCache(round.event.id, remoteUrl);
       round.videoUrl = localUrl;
       round.videoStatus = 'ready';
