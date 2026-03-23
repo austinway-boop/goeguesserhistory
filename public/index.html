@@ -284,46 +284,93 @@
     ];
 
     const EVENT_INFO = {
-      'Construction of the Great Pyramid': 'The Great Pyramid of Giza was built around 2560 BC as a tomb for Pharaoh Khufu. It took roughly 20 years and tens of thousands of workers to complete. At 146 meters tall, it remained the tallest man-made structure on Earth for over 3,800 years.',
-      'Hanging Gardens of Babylon': 'The Hanging Gardens were one of the Seven Wonders of the Ancient World, supposedly built by King Nebuchadnezzar II around 600 BC for his wife who missed the green hills of her homeland. Whether they actually existed is still debated by historians.',
-      'Completion of the Parthenon': 'The Parthenon was completed in 438 BC on the Acropolis of Athens. Dedicated to the goddess Athena, it housed a massive gold-and-ivory statue by the sculptor Phidias. Its columns were originally painted in vivid colors, not the white we see today.',
-      'Battle of Gaugamela': 'In 331 BC, Alexander the Great defeated the Persian King Darius III at Gaugamela (modern Iraq), effectively ending the Achaemenid Empire. Alexander was 25 years old and commanded around 47,000 troops against a Persian army several times larger.',
-      'Construction of the Great Wall': 'The first major construction of the Great Wall began under Emperor Qin Shi Huang around 210 BC to protect against northern nomadic invasions. The rammed-earth walls of the Qin era are very different from the stone walls built much later during the Ming Dynasty.',
-      'Assassination of Julius Caesar': 'On March 15, 44 BC (the Ides of March), Julius Caesar was assassinated by a group of Roman senators in the Theatre of Pompey. His death triggered a series of civil wars that ended the Roman Republic and led to the Roman Empire.',
-      'Opening of the Colosseum': 'The Flavian Amphitheatre (Colosseum) opened in 80 AD under Emperor Titus with 100 days of games. It could seat 50,000 spectators who watched gladiatorial combat, animal hunts, and mock naval battles. Entry was free for Roman citizens.',
-      'Eruption of Mount Vesuvius': 'On August 24, 79 AD, Mount Vesuvius erupted and buried the Roman cities of Pompeii and Herculaneum under volcanic ash. The eruption killed an estimated 16,000 people. The preserved ruins were rediscovered in 1748.',
-      'Founding of Constantinople': 'In 330 AD, Emperor Constantine I refounded the ancient city of Byzantium as Constantinople, making it the new capital of the Roman Empire. The city would serve as the capital of the Byzantine Empire for over 1,000 years.',
-      'Viking Raid on Lindisfarne': 'The Viking raid on the monastery of Lindisfarne in 793 AD is traditionally considered the beginning of the Viking Age. Norse raiders from Scandinavia attacked the wealthy but undefended monastery on a small island off northeast England.',
-      'Angkor Wat at its peak': 'Angkor Wat was built in the early 12th century by King Suryavarman II of the Khmer Empire. Originally a Hindu temple dedicated to Vishnu, it is the largest religious monument ever built and the heart of a city that may have housed a million people.',
-      'Construction of Notre-Dame Cathedral': 'Construction of Notre-Dame de Paris began in 1163 and was largely complete by 1260. It pioneered the use of flying buttresses, which allowed the walls to be thinner and filled with stained glass. It was one of the first great Gothic cathedrals.',
-      'Mongol Siege of Samarkand': 'In 1220, Genghis Khan\'s Mongol army conquered Samarkand, one of the greatest cities on the Silk Road. The Mongol Empire would eventually become the largest contiguous land empire in history, stretching from Korea to Eastern Europe.',
-      'The Black Death reaches London': 'The Black Death arrived in England in 1348, killing an estimated 30-60% of Europe\'s population over several years. The plague was caused by the bacterium Yersinia pestis and spread via fleas on rats. It fundamentally reshaped European society.',
-      'Completion of the Forbidden City': 'The Forbidden City was completed in 1420 under the Yongle Emperor of the Ming Dynasty. With 980 buildings and covering 72 hectares, it served as the Chinese imperial palace for nearly 500 years and 24 emperors.',
-      'Construction of Machu Picchu': 'Machu Picchu was built around 1450 as a royal estate for the Inca Emperor Pachacuti. Located 2,430 meters above sea level in the Andes, its precisely fitted stone walls were constructed without mortar and have survived centuries of earthquakes.',
-      'Fall of Constantinople': 'On May 29, 1453, Ottoman Sultan Mehmed II conquered Constantinople, ending the 1,100-year-old Byzantine Empire. The massive Orban cannon breached the ancient Theodosian Walls. The city was renamed Istanbul.',
-      'Columbus arrives in the New World': 'On October 12, 1492, Christopher Columbus landed in the Bahamas, believing he had reached Asia. His three ships\u2014the Santa Mar\u00eda, Pinta, and Ni\u00f1a\u2014had sailed for five weeks from Spain. This voyage began the era of European colonization of the Americas.',
-      'Completion of the Taj Mahal': 'The Taj Mahal was completed around 1643 by Mughal Emperor Shah Jahan as a mausoleum for his beloved wife Mumtaz Mahal, who died during childbirth. It took 22 years and 20,000 workers to build.',
-      'Signing of the Declaration of Independence': 'On July 4, 1776, the Continental Congress adopted the Declaration of Independence, formally breaking the 13 American colonies away from British rule. Thomas Jefferson was the principal author.',
-      'Storming of the Bastille': 'On July 14, 1789, a Parisian mob stormed the Bastille fortress-prison, a symbol of royal tyranny. The event is considered the start of the French Revolution, which would abolish the monarchy and reshape Europe.',
-      'Battle of Waterloo': 'On June 18, 1815, Napoleon was decisively defeated at Waterloo in present-day Belgium by the Duke of Wellington and Prussian forces under Bl\u00fccher. It ended 23 years of nearly continuous warfare in Europe.',
-      'Battle of Gettysburg': 'The Battle of Gettysburg (July 1-3, 1863) was the bloodiest battle of the American Civil War, with roughly 50,000 casualties. The Union victory is considered the turning point of the war.',
-      'Eiffel Tower opens for the World\'s Fair': 'The Eiffel Tower was built for the 1889 World\'s Fair celebrating the 100th anniversary of the French Revolution. Originally planned as a temporary structure, many Parisians hated it. Gustave Eiffel\'s 300-meter iron tower was the world\'s tallest structure until 1930.',
-      'D-Day Invasion': 'On June 6, 1944, Allied forces landed on five beaches in Normandy, France, in the largest amphibious invasion in history. Over 156,000 troops crossed the English Channel. The invasion began the liberation of Western Europe from Nazi occupation.',
-      'Apollo 11 Launch': 'On July 16, 1969, the Saturn V rocket launched Apollo 11 from Kennedy Space Center. Four days later, Neil Armstrong and Buzz Aldrin became the first humans to walk on the Moon, while Michael Collins orbited above.',
-      'Fall of the Berlin Wall': 'On November 9, 1989, the East German government opened the Berlin Wall after 28 years. Jubilant crowds from both sides climbed the wall and began tearing it apart. German reunification followed on October 3, 1990.',
-      'Battle of the Somme': 'The Battle of the Somme (July-November 1916) was one of WWI\'s bloodiest battles. On the first day alone, the British suffered 57,470 casualties. The battle introduced tanks to warfare for the first time.',
-      'Storming of the Winter Palace': 'On October 25, 1917, Bolshevik Red Guards stormed the Winter Palace in Petrograd, overthrowing the Provisional Government. This event, later mythologized by Soviet propaganda, marked the beginning of Communist rule in Russia.',
-      'Industrial Revolution London': 'By 1850, London was the world\'s largest city and the capital of the Industrial Revolution. Factories, railways, and steam power had transformed Britain. But the era also brought terrible pollution, child labor, and urban poverty.',
-      'California Gold Rush': 'The California Gold Rush began in 1848 when gold was found at Sutter\'s Mill. By 1849, some 300,000 people had flocked to California. The Gold Rush accelerated California\'s statehood and transformed San Francisco from a small settlement into a boomtown.',
-      'Ellis Island Opens for Immigration': 'Ellis Island opened as a federal immigration station on January 1, 1892. Over the next 62 years, more than 12 million immigrants passed through it. At its peak, inspectors processed up to 5,000 people per day.',
-      'First Powered Flight': 'On December 17, 1903, Orville Wright piloted the Wright Flyer for 12 seconds and 120 feet at Kill Devil Hills, North Carolina. It was the first sustained, controlled, powered heavier-than-air flight in history.',
-      'RMS Titanic Departs Southampton': 'RMS Titanic departed Southampton on April 10, 1912, on her maiden voyage to New York. Four days later she struck an iceberg and sank, killing over 1,500 of the 2,224 people on board. It remains one of the deadliest peacetime maritime disasters.',
-      'The Roaring Twenties in New York': 'The 1920s in America were marked by jazz, flappers, Prohibition, and an economic boom. New York\'s Times Square became the center of a new mass culture of nightlife, advertising, and entertainment.',
-      'Court of Louis XIV at Versailles': 'In 1682, Louis XIV moved the French royal court to the Palace of Versailles, consolidating his absolute power by keeping the nobility close. The Hall of Mirrors, with its 357 mirrors, became the symbol of French royal excess.',
-      'Battle of Sekigahara': 'The Battle of Sekigahara in 1600 was the decisive battle that unified Japan under Tokugawa Ieyasu, beginning the Edo period of 250 years of peace and isolation. Over 160,000 samurai fought in the misty valley.',
-      'Boston Tea Party': 'On December 16, 1773, American colonists dumped 342 chests of British East India Company tea into Boston Harbor to protest taxation without representation. It was a key event leading to the American Revolution.',
-      'Hindenburg Disaster': 'On May 6, 1937, the German airship Hindenburg caught fire while landing at Lakehurst, New Jersey, killing 36 people. The disaster, captured on film and radio, effectively ended the era of passenger airships.',
+      'Construction of the Great Pyramid': 'The Great Pyramid of Giza was built around 2560 BC as a tomb for Pharaoh Khufu. It took roughly 20 years and tens of thousands of workers to complete. At 146 meters tall, it remained the tallest man-made structure for over 3,800 years. The precision of its construction\u2014aligned to true north within 1/15th of a degree\u2014still baffles engineers. The pyramids are the last surviving Wonder of the Ancient World and shaped our entire understanding of ancient civilization.',
+      'Hanging Gardens of Babylon': 'The Hanging Gardens were one of the Seven Wonders of the Ancient World, supposedly built by King Nebuchadnezzar II around 600 BC for his wife who missed the green hills of her homeland. Whether they actually existed is still debated. What\u2019s not debated is Babylon\u2019s importance: it was the largest city in the world at the time, and Nebuchadnezzar\u2019s empire controlled all of Mesopotamia. Babylonian mathematics, astronomy, and law (the Code of Hammurabi) laid foundations still used today.',
+      'Completion of the Parthenon': 'The Parthenon was completed in 438 BC during the Golden Age of Athens under Pericles. This era produced democracy, philosophy (Socrates, Plato), theater (Sophocles, Euripides), and scientific thought that became the bedrock of Western civilization. The Parthenon itself was more than a temple\u2014it was a statement that Athens had become the cultural capital of the ancient world. Its architectural principles still influence buildings today, from the US Capitol to the British Museum.',
+      'Battle of Gaugamela': 'In 331 BC, Alexander the Great defeated the Persian King Darius III at Gaugamela, ending the 200-year-old Achaemenid Empire. Alexander was 25 years old. His conquests spread Greek language, culture, and ideas from Egypt to India, creating the Hellenistic world. Cities he founded\u2014like Alexandria in Egypt\u2014became centers of learning for centuries. The Library of Alexandria, the Rosetta Stone, and the spread of Greek philosophy all trace back to what Alexander set in motion.',
+      'Construction of the Great Wall': 'The first Great Wall was built under Emperor Qin Shi Huang around 210 BC. Qin also unified China\u2019s writing system, currency, and measurements\u2014creating the idea of \u201cChina\u201d as a single nation. Hundreds of thousands of conscripted laborers died during construction. The Wall didn\u2019t always work militarily, but it became the most powerful symbol of Chinese civilization. The stone walls tourists see today are mostly from the Ming Dynasty, built 1,600 years later.',
+      'Assassination of Julius Caesar': 'On March 15, 44 BC, Julius Caesar was stabbed 23 times by a group of senators who feared he would end the Roman Republic. Instead, his death triggered exactly what they feared: civil wars that destroyed the Republic and led to the Roman Empire under his adopted heir Augustus. Caesar\u2019s legacy is enormous\u2014the calendar we use is based on his reforms, the word \u201cEmperor\u201d comes from his name, and his life inspired Shakespeare\u2019s most famous political play.',
+      'Opening of the Colosseum': 'The Colosseum opened in 80 AD under Emperor Titus with 100 days of games. It could seat 50,000 and featured gladiatorial combat, animal hunts, and even mock naval battles. Entry was free\u2014the games were political tools to keep the populace loyal (\u201cbread and circuses\u201d). The Colosseum\u2019s engineering was revolutionary: its system of arched vaults, numbered seating, and retractable awning influenced stadium design for 2,000 years. Every modern sports arena owes something to it.',
+      'Eruption of Mount Vesuvius': 'On August 24, 79 AD, Vesuvius erupted and buried Pompeii and Herculaneum under 6 meters of ash. Around 16,000 people died. But the ash preserved the cities almost perfectly\u2014giving us an unparalleled snapshot of daily Roman life: graffiti, food, art, even the expressions on people\u2019s faces. When rediscovered in 1748, Pompeii transformed our understanding of the ancient world and ignited the modern discipline of archaeology.',
+      'Founding of Constantinople': 'In 330 AD, Emperor Constantine refounded Byzantium as Constantinople, shifting the center of Roman power eastward. This decision preserved Roman civilization for another 1,100 years after the western half fell. Constantinople became the richest city in the medieval world, a bridge between Europe and Asia. It safeguarded Greek and Roman texts that would have been lost otherwise\u2014texts that later sparked the Renaissance in Western Europe.',
+      'Viking Raid on Lindisfarne': 'The 793 AD raid on Lindisfarne is traditionally the start of the Viking Age\u2014three centuries that reshaped Europe. Vikings weren\u2019t just raiders: they were traders, explorers, and settlers who reached Baghdad, Constantinople, Iceland, Greenland, and North America (500 years before Columbus). They founded Dublin, Normandy (which later conquered England), and the Kievan Rus (the origin of Russia). The Viking Age ended medieval Europe\u2019s isolation.',
+      'Angkor Wat at its peak': 'Angkor Wat, built around 1150, is the largest religious monument ever constructed. But the real story is the Khmer Empire behind it\u2014a civilization that, at its peak, ruled much of Southeast Asia and managed one of the most sophisticated water systems in the pre-industrial world. The city of Angkor may have had a million inhabitants, making it the largest city on Earth at the time. Its decline remains one of history\u2019s great mysteries.',
+      'Construction of Notre-Dame Cathedral': 'Notre-Dame de Paris, begun in 1163, pioneered Gothic architecture\u2014flying buttresses, ribbed vaults, and walls of stained glass that flooded interiors with colored light. This was revolutionary: buildings could now soar upward instead of spreading outward. The Gothic style spread across Europe and defined medieval Christianity\u2019s visual identity. When Notre-Dame burned in 2019, the global grief showed how deeply this 850-year-old building still matters.',
+      'Mongol Siege of Samarkand': 'Genghis Khan\u2019s conquest of Samarkand in 1220 was part of creating the largest contiguous land empire in history. The Mongol Empire eventually stretched from Korea to Hungary. But the Mongols did more than conquer\u2014they reopened the Silk Road, enabled unprecedented exchange between East and West, and created the conditions for the spread of gunpowder, printing, and the plague. The modern world\u2019s interconnectedness has roots in what the Mongols built.',
+      'The Black Death reaches London': 'The Black Death killed 30\u201360% of Europe\u2019s population between 1347 and 1353\u2014roughly 25 million people. It was the worst catastrophe in recorded history. But it also transformed Europe: with so many dead, surviving peasants could demand higher wages, weakening feudalism. Land became cheap. Social mobility increased. Some historians argue the Black Death, terrible as it was, helped end the Middle Ages and set the stage for the Renaissance.',
+      'Completion of the Forbidden City': 'The Forbidden City, completed in 1420, served 24 emperors across nearly 500 years. With 980 buildings on 72 hectares, it was the largest palace complex ever built. But its significance goes beyond architecture: it was the physical center of Chinese imperial power, where decisions were made that affected a quarter of humanity. The Forbidden City embodied the Chinese concept of the emperor as the \u201cSon of Heaven,\u201d mediating between the divine and the earthly.',
+      'Construction of Machu Picchu': 'Machu Picchu was built around 1450 as a royal estate for the Inca Emperor Pachacuti. The Inca Empire was the largest in pre-Columbian America, stretching 4,000 km along the Andes without a written language, wheeled vehicles, or iron tools. Machu Picchu\u2019s stonework\u2014cut so precisely that no mortar was needed\u2014has survived centuries of earthquakes. The site was abandoned during the Spanish conquest and remained unknown to the outside world until 1911.',
+      'Fall of Constantinople': 'When Constantinople fell to the Ottomans on May 29, 1453, it ended 1,100 years of the Byzantine Empire and sent shockwaves through Europe. Greek scholars fled west, bringing manuscripts and knowledge that helped ignite the Renaissance. The Ottoman Empire that replaced it would last until 1922 and control much of the Middle East, North Africa, and southeastern Europe. The fall also motivated Europeans to find sea routes to Asia\u2014leading directly to Columbus\u2019s voyage.',
+      'Columbus arrives in the New World': 'Columbus\u2019s 1492 landing in the Bahamas began the Columbian Exchange\u2014the transfer of plants, animals, diseases, and people between the Old and New Worlds. It was the most consequential event in human history since the Agricultural Revolution. Potatoes and tomatoes transformed European diets. European diseases killed up to 90% of indigenous Americans. The Atlantic slave trade followed. The modern world\u2014its demographics, economies, and power structures\u2014was fundamentally shaped by this moment.',
+      'Completion of the Taj Mahal': 'The Taj Mahal, completed around 1643, is often called the most beautiful building ever made. But it also marks the peak of the Mughal Empire, which at its height ruled 150 million people and produced a quarter of the world\u2019s GDP. Shah Jahan\u2019s grief for his wife Mumtaz Mahal produced a masterpiece, but his extravagant building projects weakened the empire. His son Aurangzeb imprisoned him and expanded the empire to unsustainable size, leading to its eventual collapse.',
+      'Signing of the Declaration of Independence': 'The Declaration of Independence, adopted July 4, 1776, didn\u2019t just break 13 colonies from Britain\u2014it articulated ideas that changed the world. \u201cAll men are created equal\u201d and \u201cunalienable rights\u201d became the philosophical foundation for democratic movements across the globe. The French Revolution, Latin American independence movements, and modern human rights law all trace back to this document. The contradiction between its ideals and the reality of slavery would haunt America for centuries.',
+      'Storming of the Bastille': 'The storming of the Bastille on July 14, 1789 unleashed the French Revolution\u2014the most important political upheaval in modern European history. The Revolution abolished feudalism, executed the king, and attempted to rebuild society from scratch based on reason. It inspired democratic movements worldwide but also descended into the Terror, where thousands were guillotined. The Revolution\u2019s ideals of \u201clibert\u00e9, \u00e9galit\u00e9, fraternit\u00e9\u201d remain France\u2019s national motto and a universal aspiration.',
+      'Battle of Waterloo': 'Waterloo ended 23 years of nearly continuous warfare that had engulfed Europe since the French Revolution. Napoleon\u2019s defeat reshaped the continent: the Congress of Vienna established a balance of power that kept general peace in Europe for almost a century. But Napoleon\u2019s legacy persisted\u2014the Napoleonic Code became the basis for legal systems across Europe and Latin America, and the ideas of the Revolution he carried across Europe couldn\u2019t be unlearned.',
+      'Battle of Gettysburg': 'Gettysburg (July 1\u20133, 1863) was the bloodiest battle of the Civil War, with 50,000 casualties in three days. The Union victory ended Lee\u2019s invasion of the North and is considered the war\u2019s turning point. Lincoln\u2019s Gettysburg Address, delivered four months later at the battlefield, redefined the war as a fight not just to preserve the Union but to fulfill the promise of equality. The Civil War\u2019s outcome ended slavery and determined that America would be one nation, not two.',
+      'Eiffel Tower opens for the World\'s Fair': 'The Eiffel Tower, built for the 1889 World\u2019s Fair, was meant to be temporary. Many Parisians despised it. But it became the most recognizable structure on Earth and a symbol of modernity itself. The 1889 Fair celebrated the 100th anniversary of the French Revolution and showcased electric lighting, phonographs, and industrial machinery. The Tower proved that iron and engineering could create beauty\u2014paving the way for skyscrapers and modern architecture.',
+      'D-Day Invasion': 'D-Day, June 6, 1944, was the largest amphibious invasion in history. 156,000 Allied troops crossed the English Channel and stormed five Normandy beaches. The operation required years of planning, massive deception campaigns, and extraordinary courage. D-Day opened the Western Front, trapping Nazi Germany between the advancing Allies and the Soviet Union pushing from the east. Within a year, Hitler was dead and the war in Europe was over. The postwar order\u2014NATO, the UN, the European project\u2014all began here.',
+      'Apollo 11 Launch': 'Apollo 11 launched July 16, 1969, and four days later Neil Armstrong walked on the Moon. It was the culmination of a decade-long space race driven by Cold War rivalry. But its impact transcended politics: for the first time, humans saw Earth from another world. The famous \u201cEarthrise\u201d photo helped spark the environmental movement. The mission proved that problems once considered impossible\u2014leaving Earth\u2019s gravity\u2014could be solved through science, engineering, and political will.',
+      'Fall of the Berlin Wall': 'The Berlin Wall fell on November 9, 1989, after 28 years of dividing a city, a country, and a continent. Its fall symbolized the end of the Cold War\u2014the defining conflict of the second half of the 20th century. Within two years, the Soviet Union dissolved, Germany reunified, and the map of Europe was redrawn. The moment when ordinary East Germans walked freely into West Berlin remains one of the most powerful images of the triumph of human freedom.',
+      'Battle of the Somme': 'The first day of the Somme, July 1, 1916, was the worst day in British military history: 57,470 casualties, nearly 20,000 dead. The battle lasted four months and gained just 10 km. It shattered the idea that the war would be quick or glorious, and created the \u201cLost Generation\u201d of disillusioned young men whose writing\u2014Siegfried Sassoon, Wilfred Owen\u2014defined modern war literature. Tanks were used in combat for the first time. The Somme made the 20th century face what industrial warfare really meant.',
+      'Storming of the Winter Palace': 'The Bolshevik seizure of the Winter Palace on October 25, 1917 led to the creation of the Soviet Union\u2014the world\u2019s first communist state. The Russian Revolution\u2019s impact was global: it inspired communist movements from China to Cuba, triggered the Cold War, and shaped the entire 20th century. The Soviet experiment lasted 74 years, transformed a feudal empire into a nuclear superpower, and collapsed in 1991\u2014but its legacy still defines world politics.',
+      'Industrial Revolution London': 'By 1850, London was the capital of the Industrial Revolution\u2014the most transformative period in human history since the invention of agriculture. Steam power, factories, and railways didn\u2019t just change how things were made\u2014they changed where people lived, how they worked, and what they expected from life. The Revolution created the modern middle class, triggered mass urbanization, and began the carbon emissions that drive climate change today. Everything about modern life traces back to this era.',
+      'California Gold Rush': 'The 1849 Gold Rush brought 300,000 people to California in a single year\u2014one of the largest mass migrations in history. It transformed California from a remote Mexican territory into an American state almost overnight, devastated Native American communities, and created San Francisco as a major world city. The Gold Rush also established patterns of western expansion, resource extraction, and boom-bust economics that defined American growth for the next century.',
+      'Ellis Island Opens for Immigration': 'Over 12 million immigrants entered America through Ellis Island between 1892 and 1954. They came from Italy, Ireland, Russia, Poland, and dozens of other countries, fleeing poverty, persecution, and war. These immigrants\u2014and their descendants\u2014built modern America. The experience of Ellis Island shaped the American identity: a nation defined not by ethnicity but by the idea that anyone could start over. Today, roughly 40% of Americans can trace their ancestry to someone who passed through those doors.',
+      'First Powered Flight': 'The Wright Brothers\u2019 12-second flight on December 17, 1903 changed the world more than almost any other single event of the 20th century. Within 66 years, humans went from that first flight at Kitty Hawk to landing on the Moon. Aviation shrank the planet, made global warfare possible, enabled mass tourism, and created the modern interconnected world. Orville and Wilbur were bicycle mechanics from Ohio with no college degrees.',
+      'RMS Titanic Departs Southampton': 'Titanic\u2019s sinking on April 15, 1912 killed over 1,500 people and shattered the Victorian-era belief in technological invincibility. The \u201cunsinkable\u201d ship sank on its maiden voyage. The disaster led directly to the International Convention for the Safety of Life at Sea (SOLAS), which still governs maritime safety today. It also exposed class inequality: 62% of first-class passengers survived versus just 25% in third class. Titanic became a permanent symbol of hubris.',
+      'The Roaring Twenties in New York': 'The 1920s were America\u2019s first modern decade: jazz, radio, cinema, automobiles, consumer credit, and mass advertising all exploded simultaneously. Women won the vote in 1920 and asserted new social freedoms. Prohibition created organized crime. The Harlem Renaissance produced some of America\u2019s greatest art, music, and literature. But the decade\u2019s speculative excess ended in the 1929 crash and the Great Depression\u2014a warning about unchecked capitalism that resonates today.',
+      'Court of Louis XIV at Versailles': 'Louis XIV\u2019s Versailles was a political masterstroke disguised as a palace. By moving the court there in 1682, he turned France\u2019s nobles from potential rivals into dependent courtiers obsessed with etiquette and status. This centralized power and made France Europe\u2019s dominant state for a century. But the extravagance also planted seeds of resentment: a century later, the French Revolution began partly as a reaction to the royal excess that Versailles symbolized.',
+      'Battle of Sekigahara': 'Sekigahara in 1600 was Japan\u2019s most consequential battle. Tokugawa Ieyasu\u2019s victory unified the country and began the Edo period\u2014250 years of peace, isolation, and cultural flowering. During this time, Japan developed kabuki theater, ukiyo-e woodblock prints, haiku poetry, and a merchant economy. When American warships forced Japan open in 1853, the nation modernized with astonishing speed\u2014but the foundations of Japanese culture were laid in the peace that Sekigahara created.',
+      'Boston Tea Party': 'The Boston Tea Party of December 1773 was more than a protest about tea taxes\u2014it was a rejection of the principle that a distant government could tax people who had no representation in it. Britain\u2019s harsh response (the \u201cIntolerable Acts\u201d) united the colonies and led directly to the American Revolution. The idea of \u201cno taxation without representation\u201d became a foundational principle of democratic government worldwide.',
+      'Hindenburg Disaster': 'The Hindenburg disaster of May 6, 1937 killed 36 of the 97 people aboard. The real impact was psychological: the dramatic newsreel footage and Herbert Morrison\u2019s famous \u201cOh, the humanity!\u201d radio broadcast destroyed public confidence in airship travel overnight. Lighter-than-air travel was abandoned in favor of heavier-than-air planes, which were already proving faster and more practical. The disaster marked the end of one transportation era and confirmed the dominance of another.',
     };
+
+    // ─── Sound Effects (Web Audio API, no files needed) ───
+    let audioCtx;
+    function getCtx() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); return audioCtx; }
+
+    function playTone(freq, duration, type, vol) {
+      try {
+        const ctx = getCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type || 'sine';
+        osc.frequency.value = freq;
+        gain.gain.value = vol || 0.15;
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + duration);
+      } catch {}
+    }
+
+    function sfxClick() { playTone(800, 0.08, 'sine', 0.1); }
+    function sfxPin() { playTone(1200, 0.1, 'sine', 0.12); playTone(1600, 0.08, 'sine', 0.08); }
+    function sfxSlider() { playTone(400 + Math.random() * 200, 0.04, 'triangle', 0.06); }
+    function sfxSubmit() { playTone(600, 0.12, 'sine', 0.12); setTimeout(() => playTone(900, 0.15, 'sine', 0.12), 100); }
+
+    function sfxScore(score) {
+      const maxScore = 10000;
+      const ratio = Math.min(score / maxScore, 1);
+      if (ratio > 0.8) {
+        [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => playTone(f, 0.2, 'sine', 0.12), i * 100));
+      } else if (ratio > 0.5) {
+        [440, 554, 659].forEach((f, i) => setTimeout(() => playTone(f, 0.15, 'sine', 0.1), i * 120));
+      } else if (ratio > 0.2) {
+        playTone(330, 0.3, 'sine', 0.1);
+        setTimeout(() => playTone(392, 0.2, 'sine', 0.08), 150);
+      } else {
+        playTone(220, 0.4, 'sawtooth', 0.06);
+        setTimeout(() => playTone(196, 0.3, 'sawtooth', 0.05), 200);
+      }
+    }
+
+    function sfxGameOver() {
+      [392, 330, 262, 196].forEach((f, i) => setTimeout(() => playTone(f, 0.3, 'sine', 0.1), i * 200));
+    }
+
+    function sfxNextRound() { playTone(523, 0.1, 'sine', 0.1); setTimeout(() => playTone(659, 0.12, 'sine', 0.1), 80); }
 
     function show(id) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -349,6 +396,7 @@
     let pendingRound = 0;
 
     async function startGame() {
+      sfxClick();
       totalScore = 0; currentRound = 0; yearTouched = false; guessMarker = null;
       show('loading');
       document.getElementById('loadingSpinner').style.display = 'block';
@@ -419,6 +467,7 @@
     }
 
     function onMapClick(e) {
+      sfxPin();
       if (guessMarker) guessMarker.setLatLng(e.latlng);
       else {
         guessMarker = L.marker(e.latlng, {
@@ -435,6 +484,7 @@
     document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('yearSlider').addEventListener('input', function () {
         yearTouched = true;
+        sfxSlider();
         document.getElementById('yearDisplay').textContent = fmtYear(parseInt(this.value));
         updateBtn();
       });
@@ -449,6 +499,7 @@
 
     async function submitGuess() {
       if (!guessMarker || !yearTouched) return;
+      sfxSubmit();
       const b = document.getElementById('guessBtn'); b.disabled = true; b.textContent = '...';
       const ll = guessMarker.getLatLng();
       const yr = parseInt(document.getElementById('yearSlider').value);
@@ -488,6 +539,8 @@
       document.getElementById('tmCorrectLabel').style.left = cPct + '%';
       document.getElementById('tmCorrectLabel').textContent = fmtYear(d.correctYear);
 
+      setTimeout(() => sfxScore(d.totalScore), 300);
+
       const info = EVENT_INFO[d.correctEventName];
       document.getElementById('eventDesc').innerHTML = info
         ? '<strong>' + d.correctEventName + ':</strong> ' + info
@@ -510,6 +563,7 @@
     }
 
     async function nextRound() {
+      sfxNextRound();
       if (currentRound >= 4) { showFinal(); return; }
       const nr = currentRound + 1;
       show('loading');
@@ -522,6 +576,7 @@
     }
 
     async function showFinal() {
+      sfxGameOver();
       try {
         const r = await fetch(`/api/game/${gameId}/results`);
         const d = await r.json();
