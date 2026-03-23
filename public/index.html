@@ -38,6 +38,14 @@
     #playing { position: relative; background: #111; }
     .hud { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); z-index: 100; display: flex; gap: 8px; }
     .hud-chip { background: #fff; border-radius: 6px; padding: 6px 14px; font-size: 0.78rem; font-weight: 700; box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
+    .hud-chip.timer { min-width: 52px; text-align: center; transition: background 0.3s, color 0.3s; }
+    .hud-chip.timer.warn { background: #fef3c7; color: #b45309; }
+    .hud-chip.timer.danger { background: #fee2e2; color: #dc2626; animation: pulse 0.5s ease infinite alternate; }
+    @keyframes pulse { to { background: #fca5a5; } }
+    .timer-bar { position: absolute; top: 0; left: 0; right: 0; height: 3px; z-index: 101; }
+    .timer-fill { height: 100%; background: #1a1a1a; transition: width 1s linear, background 0.3s; }
+    .timer-fill.warn { background: #f59e0b; }
+    .timer-fill.danger { background: #ef4444; }
     .video-bg { position: absolute; inset: 0; z-index: 1; }
     .video-bg video { width: 100%; height: 100%; object-fit: cover; }
 
@@ -184,8 +192,10 @@
   </div>
 
   <div id="playing" class="screen">
+    <div class="timer-bar"><div class="timer-fill" id="timerFill"></div></div>
     <div class="hud">
       <div class="hud-chip" id="hudRound">Round 1 of 5</div>
+      <div class="hud-chip timer" id="hudTimer">0:30</div>
       <div class="hud-chip" id="hudScore">0 pts</div>
     </div>
     <div class="video-bg"><video id="gameVideo" autoplay loop muted playsinline></video></div>
@@ -266,6 +276,64 @@
     let gameId, currentRound = 0, totalScore = 0;
     let guessMap, guessMarker, resultMap;
     let yearTouched = false;
+    let timerInterval = null;
+    let timeLeft = 0;
+    const ROUND_TIME = 30;
+
+    function startTimer() {
+      clearInterval(timerInterval);
+      timeLeft = ROUND_TIME;
+      updateTimerDisplay();
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        updateTimerDisplay();
+        if (timeLeft <= 5 && timeLeft > 0) playTone(600 + (5 - timeLeft) * 80, 0.06, 'sine', 0.08);
+        if (timeLeft <= 0) { clearInterval(timerInterval); autoSubmit(); }
+      }, 1000);
+    }
+
+    function stopTimer() { clearInterval(timerInterval); }
+
+    function updateTimerDisplay() {
+      const el = document.getElementById('hudTimer');
+      const fill = document.getElementById('timerFill');
+      const pct = (timeLeft / ROUND_TIME) * 100;
+      const m = Math.floor(timeLeft / 60);
+      const s = timeLeft % 60;
+      el.textContent = m + ':' + (s < 10 ? '0' : '') + s;
+
+      el.classList.remove('warn', 'danger');
+      fill.classList.remove('warn', 'danger');
+      if (timeLeft <= 5) { el.classList.add('danger'); fill.classList.add('danger'); }
+      else if (timeLeft <= 10) { el.classList.add('warn'); fill.classList.add('warn'); }
+
+      fill.style.width = pct + '%';
+    }
+
+    function autoSubmit() {
+      playTone(200, 0.4, 'sawtooth', 0.1);
+      if (guessMarker && yearTouched) {
+        submitGuess();
+      } else {
+        submitDefault();
+      }
+    }
+
+    async function submitDefault() {
+      const lat = guessMarker ? guessMarker.getLatLng().lat : 0;
+      const lng = guessMarker ? guessMarker.getLatLng().lng : 0;
+      const yr = yearTouched ? parseInt(document.getElementById('yearSlider').value) : 1000;
+      const b = document.getElementById('guessBtn'); b.disabled = true; b.textContent = "Time's up!";
+      try {
+        const r = await fetch(`/api/game/${gameId}/round/${currentRound}/guess`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ year: yr, lat, lng })
+        });
+        const d = await r.json();
+        totalScore = d.gameTotalScore;
+        showResult(d, lat, lng, yr);
+      } catch {}
+    }
 
     const FACTS = [
       "The Great Pyramid was the tallest structure on Earth for 3,800 years.",
@@ -463,6 +531,7 @@
         }
         if (guessMarker) { guessMap.removeLayer(guessMarker); guessMarker = null; }
         guessMap.invalidateSize();
+        startTimer();
       }, 150);
     }
 
@@ -499,6 +568,7 @@
 
     async function submitGuess() {
       if (!guessMarker || !yearTouched) return;
+      stopTimer();
       sfxSubmit();
       const b = document.getElementById('guessBtn'); b.disabled = true; b.textContent = '...';
       const ll = guessMarker.getLatLng();
