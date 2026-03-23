@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HistoryGuessr</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/globe.gl@2.35.1/dist/globe.gl.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #12121a;
+      --surface2: #1a1a26;
+      --border: #2a2a3a;
+      --text: #e8e8f0;
+      --text-muted: #8888a0;
+      --accent: #6c5ce7;
+      --accent-light: #a29bfe;
+      --accent-glow: rgba(108, 92, 231, 0.3);
+      --success: #00d2a0;
+      --error: #ff6b6b;
+      --gold: #ffd700;
+      --radius: 12px;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .screen { display: none; min-height: 100vh; }
+    .screen.active { display: flex; }
+
+    /* ─── Landing Screen ─── */
+    #landing {
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #landing::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 30% 20%, rgba(108, 92, 231, 0.12) 0%, transparent 60%),
+        radial-gradient(ellipse at 70% 80%, rgba(162, 155, 254, 0.08) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .landing-content { position: relative; z-index: 1; padding: 40px 24px; }
+
+    .landing-title {
+      font-size: clamp(3rem, 8vw, 5.5rem);
+      font-weight: 900;
+      letter-spacing: -2px;
+      line-height: 1;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, #fff 0%, #a29bfe 50%, #6c5ce7 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .landing-subtitle {
+      font-size: 1.2rem;
+      color: var(--text-muted);
+      margin-bottom: 48px;
+      font-weight: 400;
+    }
+
+    .landing-rules {
+      display: flex;
+      gap: 32px;
+      justify-content: center;
+      margin-bottom: 48px;
+      flex-wrap: wrap;
+    }
+
+    .rule-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      max-width: 160px;
+    }
+
+    .rule-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+    }
+
+    .rule-text {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .btn-play {
+      padding: 18px 64px;
+      font-family: inherit;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(135deg, #6c5ce7, #5a4bd1);
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.25s;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-play:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px var(--accent-glow);
+    }
+
+    /* ─── Loading Screen ─── */
+    #loading {
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 40px 24px;
+    }
+
+    .loading-ring {
+      width: 80px;
+      height: 80px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 32px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-title { font-size: 1.3rem; font-weight: 600; margin-bottom: 8px; }
+    .loading-subtitle { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 32px; }
+
+    .fun-fact {
+      max-width: 480px;
+      padding: 20px 24px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      min-height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.3s;
+    }
+
+    .fun-fact-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--accent-light);
+      margin-bottom: 12px;
+    }
+
+    /* ─── Playing Screen ─── */
+    #playing { flex-direction: column; height: 100vh; }
+
+    .game-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      z-index: 1000;
+    }
+
+    .round-indicator { font-size: 0.85rem; font-weight: 600; color: var(--accent-light); }
+    .score-display { font-size: 0.85rem; font-weight: 600; color: var(--gold); }
+
+    .game-body { display: flex; flex: 1; overflow: hidden; }
+
+    .video-panel {
+      flex: 1;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .video-panel video { width: 100%; height: 100%; object-fit: contain; }
+
+    .guess-panel {
+      width: 420px;
+      display: flex;
+      flex-direction: column;
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    .globe-container {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      cursor: grab;
+    }
+
+    .globe-container:active { cursor: grabbing; }
+
+    .globe-container canvas { display: block; }
+
+    .pin-label {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(108, 92, 231, 0.85);
+      color: #fff;
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      pointer-events: none;
+      z-index: 10;
+      white-space: nowrap;
+      display: none;
+    }
+
+    .year-section {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    .year-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .year-value {
+      color: var(--accent-light);
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+
+    .year-slider-container { position: relative; padding: 4px 0; }
+
+    .year-slider {
+      width: 100%;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 6px;
+      background: var(--bg);
+      border-radius: 3px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .year-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    .year-slider::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    .year-markers {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 4px;
+      font-size: 0.65rem;
+      color: var(--text-muted);
+    }
+
+    .btn-submit-guess {
+      margin: 0 20px 16px;
+      padding: 14px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(135deg, #6c5ce7, #5a4bd1);
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.25s;
+    }
+
+    .btn-submit-guess:hover:not(:disabled) { box-shadow: 0 8px 30px var(--accent-glow); }
+    .btn-submit-guess:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ─── Result Screen ─── */
+    #result { flex-direction: column; height: 100vh; }
+
+    .result-header {
+      padding: 20px 24px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .result-event-name { font-size: 1.3rem; font-weight: 700; margin-bottom: 4px; }
+    .result-location { font-size: 0.9rem; color: var(--text-muted); }
+
+    .result-body { display: flex; flex: 1; overflow: hidden; }
+
+    .result-globe-container { flex: 1; position: relative; overflow: hidden; }
+
+    .result-sidebar {
+      width: 360px;
+      padding: 24px;
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      overflow-y: auto;
+    }
+
+    .score-card {
+      padding: 20px;
+      background: var(--bg);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      text-align: center;
+    }
+
+    .score-card-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .score-card-value { font-size: 2rem; font-weight: 800; color: var(--gold); }
+    .score-card-value.location-color { color: var(--success); }
+    .score-card-value.time-color { color: var(--accent-light); }
+
+    .score-detail {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.85rem;
+    }
+
+    .score-detail:last-child { border-bottom: none; }
+    .score-detail-label { color: var(--text-muted); }
+    .score-detail-value { font-weight: 600; }
+
+    .btn-next-round {
+      padding: 14px;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(135deg, #6c5ce7, #5a4bd1);
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.25s;
+      margin-top: auto;
+    }
+
+    .btn-next-round:hover { box-shadow: 0 8px 30px var(--accent-glow); }
+
+    /* ─── Final Score Screen ─── */
+    #final {
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 40px 24px;
+    }
+
+    .final-title { font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--accent-light); margin-bottom: 12px; }
+    .final-score { font-size: clamp(3rem, 8vw, 5rem); font-weight: 900; color: var(--gold); margin-bottom: 4px; }
+    .final-max { font-size: 1rem; color: var(--text-muted); margin-bottom: 40px; }
+
+    .final-rounds { width: 100%; max-width: 640px; display: flex; flex-direction: column; gap: 12px; margin-bottom: 40px; }
+
+    .final-round-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 14px 18px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+
+    .final-round-num { font-size: 0.8rem; font-weight: 700; color: var(--accent-light); width: 28px; text-align: center; }
+    .final-round-info { flex: 1; }
+    .final-round-event { font-size: 0.9rem; font-weight: 600; margin-bottom: 2px; }
+    .final-round-location { font-size: 0.75rem; color: var(--text-muted); }
+    .final-round-score { font-size: 1rem; font-weight: 700; color: var(--gold); min-width: 80px; text-align: right; }
+
+    .btn-play-again {
+      padding: 16px 56px;
+      font-family: inherit;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(135deg, #6c5ce7, #5a4bd1);
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.25s;
+    }
+
+    .btn-play-again:hover { transform: translateY(-2px); box-shadow: 0 12px 40px var(--accent-glow); }
+
+    @media (max-width: 800px) {
+      .game-body { flex-direction: column; }
+      .guess-panel { width: 100%; height: 55%; border-left: none; border-top: 1px solid var(--border); }
+      .video-panel { height: 45%; }
+      .result-body { flex-direction: column; }
+      .result-sidebar { width: 100%; border-left: none; border-top: 1px solid var(--border); }
+      .result-globe-container { min-height: 300px; }
+      .landing-rules { gap: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Landing Screen -->
+  <div id="landing" class="screen active">
+    <div class="landing-content">
+      <h1 class="landing-title">HistoryGuessr</h1>
+      <p class="landing-subtitle">Watch AI-generated scenes from history. Guess when and where.</p>
+      <div class="landing-rules">
+        <div class="rule-item">
+          <div class="rule-icon">&#127909;</div>
+          <span class="rule-text">Watch an AI video of a historical moment</span>
+        </div>
+        <div class="rule-item">
+          <div class="rule-icon">&#127758;</div>
+          <span class="rule-text">Click the globe to place your location guess</span>
+        </div>
+        <div class="rule-item">
+          <div class="rule-icon">&#9202;</div>
+          <span class="rule-text">Drag the timeline to guess the year</span>
+        </div>
+        <div class="rule-item">
+          <div class="rule-icon">&#11088;</div>
+          <span class="rule-text">Score points for accuracy across 5 rounds</span>
+        </div>
+      </div>
+      <button class="btn-play" onclick="startGame()">Play</button>
+    </div>
+  </div>
+
+  <!-- Loading Screen -->
+  <div id="loading" class="screen">
+    <div class="loading-ring" id="loadingRing"></div>
+    <div class="loading-title" id="loadingTitle">Generating your scene...</div>
+    <div class="loading-subtitle" id="loadingSubtitle">Our AI is recreating a moment from history</div>
+    <button class="btn-play" id="retryBtn" style="display:none; margin-bottom: 24px;" onclick="retryVideo()">Retry</button>
+    <div class="fun-fact-label">DID YOU KNOW?</div>
+    <div class="fun-fact" id="funFact"></div>
+  </div>
+
+  <!-- Playing Screen -->
+  <div id="playing" class="screen">
+    <div class="game-header">
+      <span class="round-indicator" id="roundIndicator">Round 1 / 5</span>
+      <span class="score-display" id="scoreDisplay">Score: 0</span>
+    </div>
+    <div class="game-body">
+      <div class="video-panel">
+        <video id="gameVideo" autoplay loop muted playsinline></video>
+      </div>
+      <div class="guess-panel">
+        <div class="globe-container" id="guessGlobeContainer">
+          <div class="pin-label" id="pinLabel"></div>
+        </div>
+        <div class="year-section">
+          <div class="year-label">
+            <span>Select Year</span>
+            <span class="year-value" id="yearDisplay">1 AD</span>
+          </div>
+          <div class="year-slider-container">
+            <input type="range" class="year-slider" id="yearSlider" min="-3000" max="2025" value="1" step="1">
+          </div>
+          <div class="year-markers">
+            <span>3000 BC</span>
+            <span>1500 BC</span>
+            <span>1 AD</span>
+            <span>1000</span>
+            <span>2025</span>
+          </div>
+        </div>
+        <button class="btn-submit-guess" id="submitGuessBtn" disabled onclick="submitGuess()">
+          Click the globe to place your guess
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Result Screen -->
+  <div id="result" class="screen">
+    <div class="result-header">
+      <div class="result-event-name" id="resultEventName"></div>
+      <div class="result-location" id="resultLocation"></div>
+    </div>
+    <div class="result-body">
+      <div class="result-globe-container" id="resultGlobeContainer"></div>
+      <div class="result-sidebar">
+        <div class="score-card">
+          <div class="score-card-label">Round Score</div>
+          <div class="score-card-value" id="resultTotalScore">0</div>
+        </div>
+        <div>
+          <div class="score-detail">
+            <span class="score-detail-label">Location Score</span>
+            <span class="score-detail-value location-color" id="resultLocationScore">0 / 5,000</span>
+          </div>
+          <div class="score-detail">
+            <span class="score-detail-label">Distance</span>
+            <span class="score-detail-value" id="resultDistance">0 km</span>
+          </div>
+          <div class="score-detail">
+            <span class="score-detail-label">Time Score</span>
+            <span class="score-detail-value time-color" id="resultTimeScore">0 / 5,000</span>
+          </div>
+          <div class="score-detail">
+            <span class="score-detail-label">Year Difference</span>
+            <span class="score-detail-value" id="resultYearDiff">0 years</span>
+          </div>
+          <div class="score-detail">
+            <span class="score-detail-label">Your Guess</span>
+            <span class="score-detail-value" id="resultGuessYear">-</span>
+          </div>
+          <div class="score-detail">
+            <span class="score-detail-label">Correct Year</span>
+            <span class="score-detail-value" id="resultCorrectYear">-</span>
+          </div>
+          <div class="score-detail" style="border-top: 1px solid var(--border); padding-top: 14px; margin-top: 4px;">
+            <span class="score-detail-label">Total Game Score</span>
+            <span class="score-detail-value" style="color: var(--gold);" id="resultGameScore">0</span>
+          </div>
+        </div>
+        <button class="btn-next-round" id="nextRoundBtn" onclick="nextRound()">Next Round</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Final Score Screen -->
+  <div id="final" class="screen">
+    <div class="final-title">Game Over</div>
+    <div class="final-score" id="finalScore">0</div>
+    <div class="final-max">out of 50,000</div>
+    <div class="final-rounds" id="finalRounds"></div>
+    <button class="btn-play-again" onclick="startGame()">Play Again</button>
+  </div>
+
+  <script>
+    // ─── State ───
+    let gameId = null;
+    let currentRound = 0;
+    let totalScore = 0;
+    let guessGlobe = null;
+    let resultGlobe = null;
+    let guessPin = null;
+    let yearSelected = false;
+    let lastSliderValue = 1;
+
+    const EARTH_IMG = 'https://unpkg.com/three-globe@2.35.1/example/img/earth-blue-marble.jpg';
+    const NIGHT_IMG = 'https://unpkg.com/three-globe@2.35.1/example/img/earth-night.jpg';
+    const TOPO_IMG = 'https://unpkg.com/three-globe@2.35.1/example/img/earth-topology.png';
+
+    const FUN_FACTS = [
+      "The Great Pyramid of Giza was the tallest man-made structure for over 3,800 years.",
+      "Ancient Romans used urine as mouthwash \u2014 the ammonia acted as a whitening agent.",
+      "Cleopatra lived closer in time to the Moon landing than to the construction of the Great Pyramid.",
+      "The Ottoman Empire still existed the last time the Chicago Cubs won the World Series before 2016.",
+      "Oxford University is older than the Aztec Empire.",
+      "Vikings used to give kittens to new brides as essential household gifts.",
+      "The shortest war in history lasted 38 to 45 minutes, between Britain and Zanzibar in 1896.",
+      "Ancient Egyptians used slabs of stone as pillows.",
+      "Napoleon was actually average height for his time \u2014 the myth came from British propaganda.",
+      "In 1932, Australia fought a war against emus. The emus won.",
+      "Genghis Khan killed so many people that it cooled the planet's climate.",
+      "Abraham Lincoln was a champion wrestler \u2014 he was inducted into the Wrestling Hall of Fame.",
+      "The Aztecs made swords embedded with obsidian blades sharper than modern steel scalpels.",
+      "Woolly mammoths were still alive when the Great Pyramid was being built.",
+      "The Roman Emperor Caligula once declared war on Neptune, god of the sea.",
+      "There were active volcanoes on the Moon when dinosaurs roamed the Earth.",
+      "The Great Wall of China is not actually visible from space with the naked eye.",
+      "In medieval times, animals could be put on trial and were even given lawyers.",
+      "Turkeys were once worshipped as gods by the Mayan civilization.",
+      "The Library of Alexandria was not destroyed all at once \u2014 it declined over centuries."
+    ];
+
+    // ─── Screen Management ───
+
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    function formatYear(y) {
+      if (y < 0) return `${Math.abs(y)} BC`;
+      if (y === 0) return '1 BC';
+      return `${y} AD`;
+    }
+
+    // ─── Fun Facts ───
+
+    let factInterval = null;
+
+    function startFactRotation() {
+      const el = document.getElementById('funFact');
+      let idx = Math.floor(Math.random() * FUN_FACTS.length);
+      el.textContent = FUN_FACTS[idx];
+      el.style.opacity = 1;
+      factInterval = setInterval(() => {
+        idx = (idx + 1) % FUN_FACTS.length;
+        el.style.opacity = 0;
+        setTimeout(() => {
+          el.textContent = FUN_FACTS[idx];
+          el.style.opacity = 1;
+        }, 300);
+      }, 6000);
+    }
+
+    function stopFactRotation() {
+      if (factInterval) clearInterval(factInterval);
+      factInterval = null;
+    }
+
+    // ─── Globe Helpers ───
+
+    function initGuessGlobe() {
+      const container = document.getElementById('guessGlobeContainer');
+      if (guessGlobe) {
+        guessGlobe.pointsData([]);
+        return;
+      }
+
+      guessGlobe = Globe()
+        .globeImageUrl(EARTH_IMG)
+        .bumpImageUrl(TOPO_IMG)
+        .backgroundImageUrl('//unpkg.com/three-globe@2.35.1/example/img/night-sky.png')
+        .width(container.clientWidth)
+        .height(container.clientHeight)
+        .atmosphereColor('#6c5ce7')
+        .atmosphereAltitude(0.2)
+        .pointsData([])
+        .pointAltitude(0.06)
+        .pointRadius(0.6)
+        .pointColor(() => '#a29bfe')
+        .onGlobeClick(({ lat, lng }) => {
+          guessPin = { lat, lng };
+          guessGlobe.pointsData([{ lat, lng, size: 1 }]);
+          document.getElementById('pinLabel').style.display = 'block';
+          document.getElementById('pinLabel').textContent = `${lat.toFixed(1)}\u00b0, ${lng.toFixed(1)}\u00b0`;
+          updateSubmitButton();
+        })
+        (container);
+
+      guessGlobe.controls().autoRotate = true;
+      guessGlobe.controls().autoRotateSpeed = 0.5;
+      guessGlobe.pointOfView({ lat: 20, lng: 0, altitude: 2.5 });
+    }
+
+    function initResultGlobe(guessLat, guessLng, correctLat, correctLng) {
+      const container = document.getElementById('resultGlobeContainer');
+      container.innerHTML = '';
+
+      const arcsData = [{
+        startLat: guessLat,
+        startLng: guessLng,
+        endLat: correctLat,
+        endLng: correctLng,
+        color: ['#6c5ce7', '#00d2a0']
+      }];
+
+      const pointsData = [
+        { lat: guessLat, lng: guessLng, color: '#6c5ce7', size: 0.8, label: 'Your Guess' },
+        { lat: correctLat, lng: correctLng, color: '#00d2a0', size: 0.8, label: 'Correct' }
+      ];
+
+      const ringsData = [
+        { lat: correctLat, lng: correctLng, maxR: 3, propagationSpeed: 2, repeatPeriod: 1500, color: () => '#00d2a0' }
+      ];
+
+      resultGlobe = Globe()
+        .globeImageUrl(EARTH_IMG)
+        .bumpImageUrl(TOPO_IMG)
+        .backgroundImageUrl('//unpkg.com/three-globe@2.35.1/example/img/night-sky.png')
+        .width(container.clientWidth)
+        .height(container.clientHeight)
+        .atmosphereColor('#6c5ce7')
+        .atmosphereAltitude(0.2)
+        .arcsData(arcsData)
+        .arcColor('color')
+        .arcDashLength(0.5)
+        .arcDashGap(0.2)
+        .arcDashAnimateTime(2000)
+        .arcStroke(0.8)
+        .pointsData(pointsData)
+        .pointAltitude(0.06)
+        .pointRadius('size')
+        .pointColor('color')
+        .ringsData(ringsData)
+        .ringColor('color')
+        .ringMaxRadius('maxR')
+        .ringPropagationSpeed('propagationSpeed')
+        .ringRepeatPeriod('repeatPeriod')
+        (container);
+
+      const midLat = (guessLat + correctLat) / 2;
+      const midLng = (guessLng + correctLng) / 2;
+      resultGlobe.pointOfView({ lat: midLat, lng: midLng, altitude: 2.0 }, 1000);
+    }
+
+    // ─── Game Flow ───
+
+    let pendingRoundNum = 0;
+
+    function showLoadingState() {
+      document.getElementById('loadingRing').style.display = 'block';
+      document.getElementById('loadingTitle').textContent = 'Generating your scene...';
+      document.getElementById('retryBtn').style.display = 'none';
+    }
+
+    function showFailedState() {
+      document.getElementById('loadingRing').style.display = 'none';
+      document.getElementById('loadingTitle').textContent = 'Video generation failed';
+      document.getElementById('loadingSubtitle').textContent = 'The AI service may be temporarily unavailable';
+      document.getElementById('retryBtn').style.display = 'inline-block';
+    }
+
+    async function retryVideo() {
+      showLoadingState();
+      document.getElementById('loadingSubtitle').textContent = 'Retrying...';
+      try {
+        await fetch(`/api/game/${gameId}/round/${pendingRoundNum}/retry`, { method: 'POST' });
+      } catch (e) { /* will poll anyway */ }
+      await waitForVideo(pendingRoundNum);
+    }
+
+    async function startGame() {
+      totalScore = 0;
+      currentRound = 0;
+      yearSelected = false;
+      guessPin = null;
+
+      showScreen('loading');
+      showLoadingState();
+      document.getElementById('loadingSubtitle').textContent = 'Our AI is recreating a moment from history';
+      startFactRotation();
+
+      try {
+        const res = await fetch('/api/game/new', { method: 'POST' });
+        const data = await res.json();
+        gameId = data.gameId;
+        pendingRoundNum = 0;
+        await waitForVideo(0);
+      } catch (err) {
+        stopFactRotation();
+        showFailedState();
+      }
+    }
+
+    async function waitForVideo(roundNum) {
+      pendingRoundNum = roundNum;
+      const maxAttempts = 600;
+      for (let i = 0; i < maxAttempts; i++) {
+        try {
+          const res = await fetch(`/api/game/${gameId}/round/${roundNum}`);
+          const data = await res.json();
+
+          if (data.status === 'ready') {
+            stopFactRotation();
+            showPlayingScreen(roundNum, data.videoUrl);
+            return;
+          } else if (data.status === 'failed') {
+            stopFactRotation();
+            showFailedState();
+            return;
+          }
+        } catch (err) {
+          console.error('Poll error:', err);
+        }
+        await new Promise(r => setTimeout(r, 2000));
+      }
+      stopFactRotation();
+      showFailedState();
+    }
+
+    function showPlayingScreen(roundNum, videoUrl) {
+      currentRound = roundNum;
+      guessPin = null;
+      yearSelected = false;
+      lastSliderValue = 1;
+
+      document.getElementById('roundIndicator').textContent = `Round ${roundNum + 1} / 5`;
+      document.getElementById('scoreDisplay').textContent = `Score: ${totalScore.toLocaleString()}`;
+
+      const video = document.getElementById('gameVideo');
+      video.src = videoUrl;
+      video.play().catch(() => {});
+
+      const slider = document.getElementById('yearSlider');
+      slider.value = 1;
+      document.getElementById('yearDisplay').textContent = '1 AD';
+      document.getElementById('pinLabel').style.display = 'none';
+
+      const btn = document.getElementById('submitGuessBtn');
+      btn.disabled = true;
+      btn.textContent = 'Click the globe to place your guess';
+
+      showScreen('playing');
+
+      setTimeout(() => {
+        initGuessGlobe();
+        const container = document.getElementById('guessGlobeContainer');
+        if (guessGlobe) {
+          guessGlobe.width(container.clientWidth).height(container.clientHeight);
+          guessGlobe.pointOfView({ lat: 20, lng: 0, altitude: 2.5 }, 500);
+          guessGlobe.controls().autoRotate = true;
+          guessGlobe.controls().autoRotateSpeed = 0.5;
+        }
+      }, 100);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const slider = document.getElementById('yearSlider');
+      slider.addEventListener('input', () => {
+        const val = parseInt(slider.value);
+        document.getElementById('yearDisplay').textContent = formatYear(val);
+        yearSelected = true;
+        updateSubmitButton();
+
+        if (guessGlobe) {
+          const delta = val - lastSliderValue;
+          const currentPov = guessGlobe.pointOfView();
+          const spinSpeed = Math.min(Math.max(Math.abs(delta) * 0.8, 0.5), 15);
+          const direction = delta > 0 ? 1 : -1;
+          guessGlobe.pointOfView({
+            lat: currentPov.lat,
+            lng: currentPov.lng + (direction * spinSpeed),
+            altitude: currentPov.altitude
+          }, 0);
+          guessGlobe.controls().autoRotate = false;
+        }
+
+        lastSliderValue = val;
+      });
+    });
+
+    function updateSubmitButton() {
+      const btn = document.getElementById('submitGuessBtn');
+      const hasPinAndYear = guessPin && yearSelected;
+      btn.disabled = !hasPinAndYear;
+      if (guessPin && !yearSelected) {
+        btn.textContent = 'Now select a year';
+      } else if (!guessPin && yearSelected) {
+        btn.textContent = 'Click the globe to place your guess';
+      } else if (hasPinAndYear) {
+        btn.textContent = 'Submit Guess';
+      } else {
+        btn.textContent = 'Click the globe to place your guess';
+      }
+    }
+
+    async function submitGuess() {
+      if (!guessPin || !yearSelected) return;
+
+      const btn = document.getElementById('submitGuessBtn');
+      btn.disabled = true;
+      btn.textContent = 'Submitting...';
+
+      const year = parseInt(document.getElementById('yearSlider').value);
+
+      try {
+        const res = await fetch(`/api/game/${gameId}/round/${currentRound}/guess`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ year, lat: guessPin.lat, lng: guessPin.lng })
+        });
+        const data = await res.json();
+
+        totalScore = data.gameTotalScore;
+        showResultScreen(data, guessPin.lat, guessPin.lng, year);
+      } catch (err) {
+        alert('Failed to submit guess: ' + err.message);
+        btn.disabled = false;
+        btn.textContent = 'Submit Guess';
+      }
+    }
+
+    function showResultScreen(data, guessLat, guessLng, guessYear) {
+      document.getElementById('resultEventName').textContent = data.correctEventName;
+      document.getElementById('resultLocation').textContent = `${data.correctLocationName} \u2014 ${formatYear(data.correctYear)}`;
+
+      document.getElementById('resultTotalScore').textContent = data.totalScore.toLocaleString();
+      document.getElementById('resultLocationScore').textContent = `${data.locationScore.toLocaleString()} / 5,000`;
+      document.getElementById('resultTimeScore').textContent = `${data.timeScore.toLocaleString()} / 5,000`;
+      document.getElementById('resultDistance').textContent = `${data.distanceKm.toLocaleString()} km`;
+      document.getElementById('resultYearDiff').textContent = `${data.yearDiff.toLocaleString()} years`;
+      document.getElementById('resultGuessYear').textContent = formatYear(guessYear);
+      document.getElementById('resultCorrectYear').textContent = formatYear(data.correctYear);
+      document.getElementById('resultGameScore').textContent = data.gameTotalScore.toLocaleString();
+
+      const isLastRound = currentRound >= 4;
+      document.getElementById('nextRoundBtn').textContent = isLastRound ? 'See Final Score' : 'Next Round';
+
+      showScreen('result');
+
+      setTimeout(() => {
+        initResultGlobe(guessLat, guessLng, data.correctLat, data.correctLng);
+      }, 100);
+    }
+
+    async function nextRound() {
+      if (currentRound >= 4) {
+        showFinalScreen();
+        return;
+      }
+
+      const nextRoundNum = currentRound + 1;
+      showScreen('loading');
+      showLoadingState();
+      document.getElementById('loadingSubtitle').textContent = `Generating scene for Round ${nextRoundNum + 1}...`;
+      startFactRotation();
+      await waitForVideo(nextRoundNum);
+    }
+
+    async function showFinalScreen() {
+      try {
+        const res = await fetch(`/api/game/${gameId}/results`);
+        const data = await res.json();
+
+        document.getElementById('finalScore').textContent = data.totalScore.toLocaleString();
+
+        const container = document.getElementById('finalRounds');
+        container.innerHTML = '';
+
+        data.rounds.forEach((r, i) => {
+          const row = document.createElement('div');
+          row.className = 'final-round-row';
+          row.innerHTML = `
+            <div class="final-round-num">${i + 1}</div>
+            <div class="final-round-info">
+              <div class="final-round-event">${r.eventName || 'Unknown'}</div>
+              <div class="final-round-location">${r.locationName || ''} &mdash; ${formatYear(r.correctYear)}</div>
+            </div>
+            <div class="final-round-score">${r.score ? r.score.totalScore.toLocaleString() : '0'}</div>
+          `;
+          container.appendChild(row);
+        });
+
+        showScreen('final');
+      } catch (err) {
+        document.getElementById('finalScore').textContent = totalScore.toLocaleString();
+        showScreen('final');
+      }
+    }
+
+    window.addEventListener('resize', () => {
+      if (guessGlobe) {
+        const c = document.getElementById('guessGlobeContainer');
+        guessGlobe.width(c.clientWidth).height(c.clientHeight);
+      }
+      if (resultGlobe) {
+        const c = document.getElementById('resultGlobeContainer');
+        resultGlobe.width(c.clientWidth).height(c.clientHeight);
+      }
+    });
+  </script>
+</body>
+</html>
