@@ -5,39 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HistoryGuessr</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    :root {
-      --bg: #f0ebe3;
-      --white: #ffffff;
-      --surface: #ffffff;
-      --border: #e2ddd5;
-      --text: #2d2a26;
-      --text-dim: #7a756d;
-      --purple: #6c5ce7;
-      --purple-light: #a29bfe;
-      --purple-bg: #ede9fe;
-      --green: #10b981;
-      --green-bg: #d1fae5;
-      --green-dark: #059669;
-      --orange: #f59e0b;
-      --orange-bg: #fef3c7;
-      --red: #ef4444;
-      --blue: #3b82f6;
-      --radius: 14px;
-      --radius-lg: 20px;
-      --shadow: 0 4px 20px rgba(0,0,0,0.08);
-      --shadow-lg: 0 8px 40px rgba(0,0,0,0.12);
-    }
-
     body {
-      font-family: 'Nunito', -apple-system, sans-serif;
-      background: var(--bg);
-      color: var(--text);
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: #faf9f7;
+      color: #1a1a1a;
       height: 100vh;
       overflow: hidden;
     }
@@ -51,75 +28,69 @@
       align-items: center;
       justify-content: center;
       text-align: center;
-      background: linear-gradient(160deg, #ede9fe 0%, #f0ebe3 40%, #d1fae5 100%);
+      background: #faf9f7;
       padding: 32px;
     }
 
-    .logo {
-      font-size: clamp(2.8rem, 7vw, 4.5rem);
-      font-weight: 900;
-      color: var(--purple);
-      margin-bottom: 8px;
-      letter-spacing: -1px;
+    .brand {
+      font-size: clamp(2.4rem, 6vw, 3.6rem);
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 10px;
+      letter-spacing: -0.5px;
     }
 
-    .logo span { color: var(--green); }
+    .tagline {
+      font-size: 1.05rem;
+      color: #777;
+      margin-bottom: 44px;
+      max-width: 380px;
+      line-height: 1.5;
+    }
 
-    .tagline { font-size: 1.1rem; color: var(--text-dim); margin-bottom: 40px; font-weight: 600; }
-
-    .steps {
+    .how {
       display: flex;
-      gap: 24px;
-      margin-bottom: 40px;
+      gap: 32px;
+      margin-bottom: 44px;
       flex-wrap: wrap;
       justify-content: center;
     }
 
-    .step {
-      background: var(--white);
-      border-radius: var(--radius);
-      padding: 20px 16px;
-      width: 150px;
-      box-shadow: var(--shadow);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
+    .how-item {
+      width: 120px;
+      text-align: center;
     }
 
-    .step-icon {
-      width: 44px;
-      height: 44px;
+    .how-n {
+      width: 32px;
+      height: 32px;
+      border: 2px solid #ddd;
       border-radius: 50%;
-      display: flex;
+      display: inline-flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.3rem;
-      font-weight: 800;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #555;
+      margin-bottom: 8px;
     }
 
-    .step:nth-child(1) .step-icon { background: var(--purple-bg); color: var(--purple); }
-    .step:nth-child(2) .step-icon { background: var(--green-bg); color: var(--green); }
-    .step:nth-child(3) .step-icon { background: var(--orange-bg); color: var(--orange); }
-    .step:nth-child(4) .step-icon { background: #fce7f3; color: #ec4899; }
+    .how-t { font-size: 0.78rem; color: #888; line-height: 1.4; }
 
-    .step-text { font-size: 0.8rem; color: var(--text-dim); font-weight: 600; line-height: 1.3; }
-
-    .btn-play {
-      padding: 16px 64px;
+    .btn-go {
+      padding: 14px 52px;
       font-family: inherit;
-      font-size: 1.15rem;
-      font-weight: 800;
+      font-size: 1rem;
+      font-weight: 700;
       color: #fff;
-      background: var(--green);
+      background: #1a1a1a;
       border: none;
-      border-radius: 50px;
+      border-radius: 8px;
       cursor: pointer;
-      transition: all 0.2s;
-      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+      transition: background 0.15s;
     }
 
-    .btn-play:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(16, 185, 129, 0.4); }
+    .btn-go:hover { background: #333; }
 
     /* ─── Loading ─── */
     #loading {
@@ -128,295 +99,246 @@
       justify-content: center;
       text-align: center;
       padding: 40px 24px;
-      background: var(--bg);
+      background: #faf9f7;
     }
 
     .spinner {
-      width: 56px;
-      height: 56px;
-      border: 4px solid var(--border);
-      border-top-color: var(--purple);
+      width: 40px;
+      height: 40px;
+      border: 3px solid #e5e5e5;
+      border-top-color: #1a1a1a;
       border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin-bottom: 24px;
+      animation: spin 0.7s linear infinite;
+      margin-bottom: 20px;
     }
 
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    .load-title { font-size: 1.15rem; font-weight: 800; margin-bottom: 4px; color: var(--text); }
-    .load-sub { color: var(--text-dim); font-size: 0.85rem; margin-bottom: 24px; font-weight: 600; }
+    .load-title { font-size: 1rem; font-weight: 600; margin-bottom: 4px; }
+    .load-sub { color: #999; font-size: 0.82rem; margin-bottom: 24px; }
 
     .fact-card {
-      max-width: 420px;
-      padding: 16px 20px;
-      background: var(--white);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      font-size: 0.85rem;
-      color: var(--text-dim);
-      font-weight: 600;
+      max-width: 400px;
+      padding: 14px 18px;
+      background: #fff;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      color: #666;
       line-height: 1.5;
       transition: opacity 0.3s;
     }
 
-    .fact-tag {
-      display: inline-block;
-      font-size: 0.6rem;
-      font-weight: 800;
-      letter-spacing: 1px;
-      color: var(--purple);
-      background: var(--purple-bg);
-      padding: 3px 8px;
-      border-radius: 6px;
-      margin-bottom: 8px;
-      text-transform: uppercase;
-    }
+    .fact-label { font-size: 0.6rem; font-weight: 700; letter-spacing: 1px; color: #aaa; margin-bottom: 8px; text-transform: uppercase; }
 
     .btn-retry {
-      padding: 10px 28px;
+      padding: 8px 24px;
       font-family: inherit;
-      font-size: 0.9rem;
-      font-weight: 700;
+      font-size: 0.85rem;
+      font-weight: 600;
       color: #fff;
-      background: var(--purple);
+      background: #1a1a1a;
       border: none;
-      border-radius: 50px;
+      border-radius: 6px;
       cursor: pointer;
       margin-bottom: 16px;
     }
 
     /* ─── Playing ─── */
-    #playing { position: relative; background: #1a1a2e; }
+    #playing { position: relative; background: #111; }
 
-    .play-bar {
+    .hud {
       position: absolute;
-      top: 12px;
+      top: 14px;
       left: 50%;
       transform: translateX(-50%);
       z-index: 100;
       display: flex;
-      gap: 12px;
-      align-items: center;
+      gap: 8px;
     }
 
-    .pill {
-      background: var(--white);
-      border-radius: 50px;
-      padding: 8px 18px;
-      font-size: 0.8rem;
-      font-weight: 800;
-      box-shadow: var(--shadow-lg);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      color: var(--text);
+    .hud-chip {
+      background: #fff;
+      border-radius: 6px;
+      padding: 6px 14px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #1a1a1a;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.15);
     }
-
-    .pill-dot { width: 8px; height: 8px; border-radius: 50%; }
-    .pill-dot.purple { background: var(--purple); }
-    .pill-dot.gold { background: var(--orange); }
 
     .video-bg { position: absolute; inset: 0; z-index: 1; }
     .video-bg video { width: 100%; height: 100%; object-fit: cover; }
 
-    .control-tray {
+    .tray {
       position: absolute;
-      bottom: 20px;
-      right: 20px;
+      bottom: 16px;
+      right: 16px;
       z-index: 200;
+      width: 340px;
       display: flex;
       flex-direction: column;
-      align-items: stretch;
-      width: 340px;
-      gap: 0;
-    }
-
-    .mini-map-box {
-      height: 240px;
-      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+      border-radius: 10px;
       overflow: hidden;
-      position: relative;
-      box-shadow: var(--shadow-lg);
-      transition: height 0.3s ease;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.25);
     }
 
-    .mini-map-box.big { height: 400px; }
+    .map-box {
+      height: 220px;
+      position: relative;
+      transition: height 0.25s ease;
+    }
 
-    .mini-map-box #guessMap { width: 100%; height: 100%; }
+    .map-box.big { height: 380px; }
+
+    .map-box #guessMap { width: 100%; height: 100%; }
 
     .expand-btn {
       position: absolute;
-      top: 8px;
-      left: 8px;
+      top: 6px;
+      left: 6px;
       z-index: 600;
-      width: 30px;
-      height: 30px;
-      background: var(--white);
+      width: 26px;
+      height: 26px;
+      background: #fff;
       border: none;
-      border-radius: 8px;
+      border-radius: 4px;
       cursor: pointer;
-      font-size: 0.85rem;
+      font-size: 0.75rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: var(--shadow);
-      color: var(--text);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+      color: #333;
     }
 
-    .bottom-bar {
-      background: var(--white);
-      border-radius: 0 0 var(--radius-lg) var(--radius-lg);
-      padding: 14px 16px;
+    .controls {
+      background: #fff;
+      padding: 12px 14px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
-      box-shadow: var(--shadow-lg);
-    }
-
-    .year-row {
-      display: flex;
-      align-items: center;
       gap: 10px;
     }
 
-    .yr-label { font-size: 0.65rem; font-weight: 800; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+    .yr-row { display: flex; align-items: center; gap: 8px; }
+
+    .yr-lbl { font-size: 0.62rem; font-weight: 700; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px; }
 
     .yr-slider {
       flex: 1;
       -webkit-appearance: none;
       appearance: none;
-      height: 6px;
-      background: #e5e2dc;
-      border-radius: 3px;
+      height: 4px;
+      background: #e5e5e5;
+      border-radius: 2px;
       outline: none;
       cursor: pointer;
     }
 
     .yr-slider::-webkit-slider-thumb {
       -webkit-appearance: none;
-      width: 20px;
-      height: 20px;
+      width: 16px;
+      height: 16px;
       border-radius: 50%;
-      background: var(--purple);
+      background: #1a1a1a;
       cursor: pointer;
-      box-shadow: 0 2px 8px rgba(108,92,231,0.4);
     }
 
     .yr-slider::-moz-range-thumb {
-      width: 20px;
-      height: 20px;
+      width: 16px;
+      height: 16px;
       border-radius: 50%;
-      background: var(--purple);
+      background: #1a1a1a;
       cursor: pointer;
       border: none;
     }
 
-    .yr-val {
-      font-size: 1rem;
-      font-weight: 900;
-      color: var(--purple);
-      min-width: 90px;
-      text-align: right;
-    }
+    .yr-val { font-size: 0.9rem; font-weight: 700; color: #1a1a1a; min-width: 82px; text-align: right; }
 
-    .yr-ticks {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.55rem;
-      color: #b5b0a8;
-      font-weight: 700;
-      margin-top: -4px;
-      padding: 0 2px;
-    }
+    .yr-ticks { display: flex; justify-content: space-between; font-size: 0.5rem; color: #bbb; font-weight: 600; margin-top: -2px; }
 
     .btn-guess {
       width: 100%;
-      padding: 12px;
+      padding: 10px;
       font-family: inherit;
-      font-size: 1rem;
-      font-weight: 800;
+      font-size: 0.9rem;
+      font-weight: 700;
       color: #fff;
-      background: var(--green);
+      background: #1a1a1a;
       border: none;
-      border-radius: 50px;
+      border-radius: 6px;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: background 0.15s;
     }
 
-    .btn-guess:hover:not(:disabled) { box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4); transform: translateY(-1px); }
-    .btn-guess:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-guess:hover:not(:disabled) { background: #333; }
+    .btn-guess:disabled { opacity: 0.3; cursor: not-allowed; }
 
     /* ─── Result ─── */
-    #result { flex-direction: column; background: var(--bg); }
+    #result { flex-direction: column; background: #faf9f7; }
 
-    .res-header {
+    .res-top {
       text-align: center;
       padding: 14px 20px;
-      background: var(--white);
-      border-bottom: 1px solid var(--border);
+      background: #fff;
+      border-bottom: 1px solid #eee;
     }
 
-    .res-event { font-size: 1.15rem; font-weight: 800; color: var(--text); }
-    .res-where { font-size: 0.8rem; color: var(--text-dim); font-weight: 600; margin-top: 2px; }
+    .res-name { font-size: 1.1rem; font-weight: 700; }
+    .res-loc { font-size: 0.78rem; color: #888; margin-top: 2px; }
 
-    .res-body { display: flex; flex: 1; overflow: hidden; }
-
+    .res-mid { display: flex; flex: 1; overflow: hidden; }
     #resultMap { flex: 1; }
 
-    .res-panel {
-      width: 340px;
-      padding: 20px;
-      background: var(--white);
-      border-left: 1px solid var(--border);
+    .res-side {
+      width: 320px;
+      padding: 18px;
+      background: #fff;
+      border-left: 1px solid #eee;
       display: flex;
       flex-direction: column;
       gap: 14px;
       overflow-y: auto;
     }
 
-    .score-hero {
+    .score-box {
       text-align: center;
-      padding: 18px;
-      background: linear-gradient(135deg, var(--purple-bg) 0%, #fef3c7 100%);
-      border-radius: var(--radius);
+      padding: 16px;
+      border: 1px solid #eee;
+      border-radius: 8px;
     }
 
-    .score-hero-label { font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); margin-bottom: 2px; }
-    .score-hero-val { font-size: 2.2rem; font-weight: 900; color: var(--purple); }
+    .score-box-label { font-size: 0.58rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #aaa; margin-bottom: 2px; }
+    .score-box-val { font-size: 2rem; font-weight: 700; color: #1a1a1a; }
 
-    .stats { display: flex; flex-direction: column; gap: 0; }
+    .stats { }
 
-    .s-row {
+    .st {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      padding: 9px 0;
-      border-bottom: 1px solid var(--border);
-      font-size: 0.8rem;
+      padding: 8px 0;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 0.78rem;
     }
 
-    .s-row:last-child { border-bottom: none; }
-    .s-k { color: var(--text-dim); font-weight: 600; }
-    .s-v { font-weight: 800; }
-    .s-v.green { color: var(--green); }
-    .s-v.purple { color: var(--purple); }
-    .s-v.orange { color: var(--orange); }
+    .st:last-child { border-bottom: none; }
+    .st-k { color: #999; }
+    .st-v { font-weight: 700; }
 
     .btn-next {
       margin-top: auto;
-      padding: 12px;
+      padding: 11px;
       font-family: inherit;
-      font-size: 0.95rem;
-      font-weight: 800;
+      font-size: 0.9rem;
+      font-weight: 700;
       color: #fff;
-      background: var(--green);
+      background: #1a1a1a;
       border: none;
-      border-radius: 50px;
+      border-radius: 6px;
       cursor: pointer;
-      transition: all 0.2s;
     }
 
-    .btn-next:hover { box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4); }
+    .btn-next:hover { background: #333; }
 
     /* ─── Final ─── */
     #final {
@@ -424,133 +346,122 @@
       align-items: center;
       justify-content: center;
       padding: 32px 24px;
-      background: linear-gradient(160deg, #ede9fe 0%, #f0ebe3 40%, #fef3c7 100%);
+      background: #faf9f7;
       overflow-y: auto;
     }
 
-    .fin-tag { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: var(--purple); margin-bottom: 4px; }
-    .fin-score { font-size: clamp(2.5rem, 7vw, 4.5rem); font-weight: 900; color: var(--text); margin-bottom: 2px; }
-    .fin-max { font-size: 0.9rem; color: var(--text-dim); font-weight: 600; margin-bottom: 28px; }
+    .f-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #aaa; margin-bottom: 6px; }
+    .f-score { font-size: clamp(2.5rem, 7vw, 4rem); font-weight: 700; color: #1a1a1a; margin-bottom: 2px; }
+    .f-max { font-size: 0.85rem; color: #aaa; margin-bottom: 28px; }
 
-    .fin-list { width: 100%; max-width: 520px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 28px; }
+    .f-list { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 6px; margin-bottom: 28px; }
 
-    .fin-row {
+    .f-row {
       display: flex;
       align-items: center;
       gap: 12px;
-      padding: 12px 14px;
-      background: var(--white);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
+      padding: 11px 14px;
+      background: #fff;
+      border: 1px solid #eee;
+      border-radius: 8px;
     }
 
-    .fin-n {
-      width: 28px; height: 28px;
-      background: var(--purple-bg);
-      color: var(--purple);
-      border-radius: 50%;
-      font-size: 0.75rem;
-      font-weight: 900;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+    .f-n { font-size: 0.72rem; font-weight: 700; color: #aaa; width: 20px; text-align: center; }
+    .f-info { flex: 1; }
+    .f-name { font-size: 0.8rem; font-weight: 600; }
+    .f-loc { font-size: 0.65rem; color: #999; }
+    .f-pts { font-size: 0.88rem; font-weight: 700; color: #1a1a1a; }
 
-    .fin-info { flex: 1; }
-    .fin-name { font-size: 0.82rem; font-weight: 700; }
-    .fin-loc { font-size: 0.68rem; color: var(--text-dim); font-weight: 600; }
-    .fin-pts { font-size: 0.95rem; font-weight: 900; color: var(--green); }
-
-    .leaflet-container { background: #f2efe9; }
+    .leaflet-container { background: #f5f3ef; }
     .leaflet-control-attribution { display: none !important; }
 
     @media (max-width: 700px) {
-      .control-tray { width: 280px; right: 10px; bottom: 10px; }
-      .mini-map-box { height: 180px; }
-      .mini-map-box.big { height: 300px; }
-      .res-body { flex-direction: column; }
-      .res-panel { width: 100%; border-left: none; border-top: 1px solid var(--border); }
+      .tray { width: 260px; right: 8px; bottom: 8px; }
+      .map-box { height: 160px; }
+      .map-box.big { height: 280px; }
+      .res-mid { flex-direction: column; }
+      .res-side { width: 100%; border-left: none; border-top: 1px solid #eee; }
     }
   </style>
 </head>
 <body>
 
   <div id="landing" class="screen active">
-    <h1 class="logo">History<span>Guessr</span></h1>
-    <p class="tagline">Watch AI history. Guess when &amp; where.</p>
-    <div class="steps">
-      <div class="step"><div class="step-icon">&#127916;</div><div class="step-text">Watch a scene from history</div></div>
-      <div class="step"><div class="step-icon">&#128205;</div><div class="step-text">Drop a pin on the map</div></div>
-      <div class="step"><div class="step-icon">&#128197;</div><div class="step-text">Pick the year</div></div>
-      <div class="step"><div class="step-icon">&#127942;</div><div class="step-text">Score points!</div></div>
+    <h1 class="brand">HistoryGuessr</h1>
+    <p class="tagline">An AI generates a scene from somewhere in history. You figure out when and where it happened.</p>
+    <div class="how">
+      <div class="how-item"><div class="how-n">1</div><div class="how-t">Watch the scene</div></div>
+      <div class="how-item"><div class="how-n">2</div><div class="how-t">Pin the location</div></div>
+      <div class="how-item"><div class="how-n">3</div><div class="how-t">Pick the year</div></div>
+      <div class="how-item"><div class="how-n">4</div><div class="how-t">See your score</div></div>
     </div>
-    <button class="btn-play" onclick="startGame()">Play Now</button>
+    <button class="btn-go" onclick="startGame()">Start game</button>
   </div>
 
   <div id="loading" class="screen">
     <div class="spinner" id="loadingSpinner"></div>
     <div class="load-title" id="loadTitle">Generating your scene...</div>
-    <div class="load-sub" id="loadSub">About 30 &ndash; 60 seconds</div>
-    <button class="btn-retry" id="retryBtn" style="display:none" onclick="retryVideo()">Try Again</button>
-    <div class="fact-tag">Did you know?</div>
+    <div class="load-sub" id="loadSub">This usually takes about a minute</div>
+    <button class="btn-retry" id="retryBtn" style="display:none" onclick="retryVideo()">Try again</button>
+    <div class="fact-label">Did you know</div>
     <div class="fact-card" id="funFact"></div>
   </div>
 
   <div id="playing" class="screen">
-    <div class="play-bar">
-      <div class="pill"><div class="pill-dot purple"></div><span id="hudRound">Round 1 / 5</span></div>
-      <div class="pill"><div class="pill-dot gold"></div><span id="hudScore">0 pts</span></div>
+    <div class="hud">
+      <div class="hud-chip" id="hudRound">Round 1 of 5</div>
+      <div class="hud-chip" id="hudScore">0 pts</div>
     </div>
     <div class="video-bg"><video id="gameVideo" autoplay loop muted playsinline></video></div>
-    <div class="control-tray">
-      <div class="mini-map-box" id="mapBox">
+    <div class="tray">
+      <div class="map-box" id="mapBox">
         <button class="expand-btn" id="expandBtn" onclick="toggleMap()">&#x2922;</button>
         <div id="guessMap"></div>
       </div>
-      <div class="bottom-bar">
-        <div class="year-row">
-          <span class="yr-label">Year</span>
+      <div class="controls">
+        <div class="yr-row">
+          <span class="yr-lbl">Year</span>
           <input class="yr-slider" type="range" id="yearSlider" min="-3000" max="2025" value="1000" step="1">
           <span class="yr-val" id="yearDisplay">1000 AD</span>
         </div>
         <div class="yr-ticks"><span>3000 BC</span><span>1000 BC</span><span>1 AD</span><span>1000</span><span>2025</span></div>
-        <button class="btn-guess" id="guessBtn" disabled onclick="submitGuess()">Place a pin to guess</button>
+        <button class="btn-guess" id="guessBtn" disabled onclick="submitGuess()">Place a pin first</button>
       </div>
     </div>
   </div>
 
   <div id="result" class="screen">
-    <div class="res-header">
-      <div class="res-event" id="resEvent"></div>
-      <div class="res-where" id="resPlace"></div>
+    <div class="res-top">
+      <div class="res-name" id="resEvent"></div>
+      <div class="res-loc" id="resPlace"></div>
     </div>
-    <div class="res-body">
+    <div class="res-mid">
       <div id="resultMap"></div>
-      <div class="res-panel">
-        <div class="score-hero">
-          <div class="score-hero-label">Round Score</div>
-          <div class="score-hero-val" id="resScore">0</div>
+      <div class="res-side">
+        <div class="score-box">
+          <div class="score-box-label">Round Score</div>
+          <div class="score-box-val" id="resScore">0</div>
         </div>
         <div class="stats">
-          <div class="s-row"><span class="s-k">Location</span><span class="s-v green" id="resLocScore">0 / 5,000</span></div>
-          <div class="s-row"><span class="s-k">Distance</span><span class="s-v" id="resDist">0 km</span></div>
-          <div class="s-row"><span class="s-k">Time</span><span class="s-v purple" id="resTimeScore">0 / 5,000</span></div>
-          <div class="s-row"><span class="s-k">Off by</span><span class="s-v" id="resYearDiff">0 years</span></div>
-          <div class="s-row"><span class="s-k">You said</span><span class="s-v" id="resGuessYear">-</span></div>
-          <div class="s-row"><span class="s-k">Answer</span><span class="s-v" id="resCorrectYear">-</span></div>
-          <div class="s-row" style="border-top:2px solid var(--border);padding-top:10px;margin-top:2px"><span class="s-k">Game Total</span><span class="s-v orange" id="resGameTotal">0</span></div>
+          <div class="st"><span class="st-k">Location</span><span class="st-v" id="resLocScore">0 / 5,000</span></div>
+          <div class="st"><span class="st-k">Distance</span><span class="st-v" id="resDist">0 km</span></div>
+          <div class="st"><span class="st-k">Time</span><span class="st-v" id="resTimeScore">0 / 5,000</span></div>
+          <div class="st"><span class="st-k">Off by</span><span class="st-v" id="resYearDiff">0 years</span></div>
+          <div class="st"><span class="st-k">You said</span><span class="st-v" id="resGuessYear">-</span></div>
+          <div class="st"><span class="st-k">Answer</span><span class="st-v" id="resCorrectYear">-</span></div>
+          <div class="st" style="border-top:1px solid #eee;padding-top:10px;margin-top:4px"><span class="st-k">Total</span><span class="st-v" id="resGameTotal">0</span></div>
         </div>
-        <button class="btn-next" id="nextBtn" onclick="nextRound()">Next Round</button>
+        <button class="btn-next" id="nextBtn" onclick="nextRound()">Next round</button>
       </div>
     </div>
   </div>
 
   <div id="final" class="screen">
-    <div class="fin-tag">Game Over</div>
-    <div class="fin-score" id="finalScore">0</div>
-    <div class="fin-max">out of 50,000</div>
-    <div class="fin-list" id="finalList"></div>
-    <button class="btn-play" onclick="startGame()">Play Again</button>
+    <div class="f-label">Game over</div>
+    <div class="f-score" id="finalScore">0</div>
+    <div class="f-max">out of 50,000</div>
+    <div class="f-list" id="finalList"></div>
+    <button class="btn-go" onclick="startGame()">Play again</button>
   </div>
 
   <script>
@@ -562,16 +473,16 @@
       "The Great Pyramid was the tallest structure on Earth for 3,800 years.",
       "Cleopatra lived closer to the Moon landing than to the Pyramids.",
       "Oxford University is older than the Aztec Empire.",
-      "The shortest war ever lasted 38 minutes (Britain vs Zanzibar, 1896).",
-      "Napoleon was average height \u2014 the short thing was British propaganda.",
-      "In 1932, Australia lost a war against emus. Seriously.",
-      "Genghis Khan killed so many people it cooled the climate.",
+      "The shortest war ever lasted 38 minutes\u2014Britain vs Zanzibar, 1896.",
+      "Napoleon was average height. The short thing was British propaganda.",
+      "In 1932, Australia lost a war against emus.",
+      "Genghis Khan killed so many people it measurably cooled the climate.",
       "Woolly mammoths were alive when the Pyramids were being built.",
-      "The Great Wall of China is NOT visible from space.",
-      "In medieval Europe, animals were put on trial with lawyers.",
+      "The Great Wall of China is not visible from space with the naked eye.",
+      "In medieval Europe, animals were put on trial and given lawyers.",
       "Abraham Lincoln is in the Wrestling Hall of Fame.",
       "Vikings gave kittens to new brides as wedding gifts.",
-      "The Library of Alexandria declined over centuries, not one fire."
+      "The Library of Alexandria declined over centuries, not in a single fire."
     ];
 
     function show(id) {
@@ -602,7 +513,7 @@
       mapBig = !mapBig;
       document.getElementById('mapBox').classList.toggle('big', mapBig);
       document.getElementById('expandBtn').textContent = mapBig ? '\u2716' : '\u2922';
-      setTimeout(() => { if (guessMap) guessMap.invalidateSize(); }, 350);
+      setTimeout(() => { if (guessMap) guessMap.invalidateSize(); }, 300);
     }
 
     let pendingRound = 0;
@@ -612,7 +523,7 @@
       show('loading');
       document.getElementById('loadingSpinner').style.display = 'block';
       document.getElementById('loadTitle').textContent = 'Generating your scene...';
-      document.getElementById('loadSub').textContent = 'About 30 \u2013 60 seconds';
+      document.getElementById('loadSub').textContent = 'This usually takes about a minute';
       document.getElementById('retryBtn').style.display = 'none';
       startFacts();
       try {
@@ -625,14 +536,14 @@
 
     function showFail() {
       document.getElementById('loadingSpinner').style.display = 'none';
-      document.getElementById('loadTitle').textContent = 'Generation failed';
-      document.getElementById('loadSub').textContent = 'AI might be busy. Give it another shot!';
+      document.getElementById('loadTitle').textContent = 'That didn\u2019t work';
+      document.getElementById('loadSub').textContent = 'The AI might be busy right now.';
       document.getElementById('retryBtn').style.display = 'inline-block';
     }
 
     async function retryVideo() {
       document.getElementById('loadingSpinner').style.display = 'block';
-      document.getElementById('loadTitle').textContent = 'Retrying...';
+      document.getElementById('loadTitle').textContent = 'Trying again...';
       document.getElementById('retryBtn').style.display = 'none';
       try { await fetch(`/api/game/${gameId}/round/${pendingRound}/retry`, { method: 'POST' }); } catch {}
       await pollVideo(pendingRound);
@@ -654,14 +565,14 @@
 
     function showPlaying(rn, url) {
       currentRound = rn; yearTouched = false;
-      document.getElementById('hudRound').textContent = `Round ${rn + 1} / 5`;
+      document.getElementById('hudRound').textContent = 'Round ' + (rn + 1) + ' of 5';
       document.getElementById('hudScore').textContent = totalScore.toLocaleString() + ' pts';
       const v = document.getElementById('gameVideo');
       v.src = url; v.play().catch(() => {});
       document.getElementById('yearSlider').value = 1000;
       document.getElementById('yearDisplay').textContent = '1000 AD';
       const btn = document.getElementById('guessBtn');
-      btn.disabled = true; btn.textContent = 'Place a pin to guess';
+      btn.disabled = true; btn.textContent = 'Place a pin first';
       mapBig = false;
       document.getElementById('mapBox').classList.remove('big');
       document.getElementById('expandBtn').textContent = '\u2922';
@@ -689,7 +600,7 @@
         guessMarker = L.marker(e.latlng, {
           icon: L.divIcon({
             className: '',
-            html: '<div style="width:24px;height:24px;background:#6c5ce7;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 10px rgba(0,0,0,0.3);transform:translate(-12px,-12px)"></div>',
+            html: '<div style="width:20px;height:20px;background:#1a1a1a;border:3px solid #fff;border-radius:50%;box-shadow:0 1px 6px rgba(0,0,0,0.3);transform:translate(-10px,-10px)"></div>',
             iconSize: [0, 0]
           })
         }).addTo(guessMap);
@@ -709,7 +620,7 @@
       const ok = guessMarker && yearTouched;
       const b = document.getElementById('guessBtn');
       b.disabled = !ok;
-      b.textContent = ok ? 'Guess!' : (!guessMarker ? 'Place a pin to guess' : 'Now pick a year');
+      b.textContent = ok ? 'Submit guess' : (!guessMarker ? 'Place a pin first' : 'Now pick a year');
     }
 
     async function submitGuess() {
@@ -726,7 +637,7 @@
         const d = await r.json();
         totalScore = d.gameTotalScore;
         showResult(d, ll.lat, ll.lng, yr);
-      } catch { b.disabled = false; b.textContent = 'Guess!'; }
+      } catch { b.disabled = false; b.textContent = 'Submit guess'; }
     }
 
     function showResult(d, gLat, gLng, gYear) {
@@ -740,19 +651,19 @@
       document.getElementById('resGuessYear').textContent = fmtYear(gYear);
       document.getElementById('resCorrectYear').textContent = fmtYear(d.correctYear);
       document.getElementById('resGameTotal').textContent = d.gameTotalScore.toLocaleString();
-      document.getElementById('nextBtn').textContent = currentRound >= 4 ? 'See Results' : 'Next Round';
+      document.getElementById('nextBtn').textContent = currentRound >= 4 ? 'See results' : 'Next round';
       show('result');
 
       if (resultMap) { resultMap.remove(); resultMap = null; }
       resultMap = L.map('resultMap', { center: [0, 0], zoom: 2, worldCopyJump: true, zoomControl: false });
       L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { subdomains: 'abcd', maxZoom: 20 }).addTo(resultMap);
 
-      const gi = L.divIcon({ className: '', html: '<div style="width:20px;height:20px;background:#6c5ce7;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.3);transform:translate(-10px,-10px)"></div>', iconSize: [0, 0] });
-      const ci = L.divIcon({ className: '', html: '<div style="width:20px;height:20px;background:#10b981;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.3);transform:translate(-10px,-10px)"></div>', iconSize: [0, 0] });
+      const gi = L.divIcon({ className: '', html: '<div style="width:16px;height:16px;background:#1a1a1a;border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.3);transform:translate(-8px,-8px)"></div>', iconSize: [0, 0] });
+      const ci = L.divIcon({ className: '', html: '<div style="width:16px;height:16px;background:#16a34a;border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.3);transform:translate(-8px,-8px)"></div>', iconSize: [0, 0] });
 
-      L.marker([gLat, gLng], { icon: gi }).addTo(resultMap).bindPopup('<b>Your Guess</b><br>' + fmtYear(gYear));
+      L.marker([gLat, gLng], { icon: gi }).addTo(resultMap).bindPopup('<b>Your guess</b><br>' + fmtYear(gYear));
       L.marker([d.correctLat, d.correctLng], { icon: ci }).addTo(resultMap).bindPopup('<b>' + d.correctEventName + '</b><br>' + d.correctLocationName);
-      L.polyline([[gLat, gLng], [d.correctLat, d.correctLng]], { color: '#ef4444', weight: 2.5, dashArray: '8,6', opacity: 0.8 }).addTo(resultMap);
+      L.polyline([[gLat, gLng], [d.correctLat, d.correctLng]], { color: '#dc2626', weight: 2, dashArray: '6,5', opacity: 0.7 }).addTo(resultMap);
       resultMap.fitBounds([[gLat, gLng], [d.correctLat, d.correctLng]], { padding: [50, 50], maxZoom: 8 });
       setTimeout(() => resultMap.invalidateSize(), 100);
     }
@@ -762,8 +673,8 @@
       const nr = currentRound + 1;
       show('loading');
       document.getElementById('loadingSpinner').style.display = 'block';
-      document.getElementById('loadTitle').textContent = 'Generating Round ' + (nr + 1) + '...';
-      document.getElementById('loadSub').textContent = 'Hang tight!';
+      document.getElementById('loadTitle').textContent = 'Generating round ' + (nr + 1) + '...';
+      document.getElementById('loadSub').textContent = 'Hang on';
       document.getElementById('retryBtn').style.display = 'none';
       startFacts();
       await pollVideo(nr);
@@ -776,8 +687,8 @@
         document.getElementById('finalScore').textContent = d.totalScore.toLocaleString();
         const el = document.getElementById('finalList'); el.innerHTML = '';
         d.rounds.forEach((r, i) => {
-          const row = document.createElement('div'); row.className = 'fin-row';
-          row.innerHTML = '<div class="fin-n">' + (i + 1) + '</div><div class="fin-info"><div class="fin-name">' + (r.eventName || '?') + '</div><div class="fin-loc">' + (r.locationName || '') + ' \u2014 ' + fmtYear(r.correctYear) + '</div></div><div class="fin-pts">' + (r.score ? r.score.totalScore.toLocaleString() : '0') + '</div>';
+          const row = document.createElement('div'); row.className = 'f-row';
+          row.innerHTML = '<div class="f-n">' + (i + 1) + '</div><div class="f-info"><div class="f-name">' + (r.eventName || '?') + '</div><div class="f-loc">' + (r.locationName || '') + ' \u2014 ' + fmtYear(r.correctYear) + '</div></div><div class="f-pts">' + (r.score ? r.score.totalScore.toLocaleString() : '0') + '</div>';
           el.appendChild(row);
         });
       } catch {}
