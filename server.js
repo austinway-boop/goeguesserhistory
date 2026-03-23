@@ -341,6 +341,7 @@ app.post('/api/game/:id/round/:num/guess', (req, res) => {
     distanceKm: score.distanceKm, yearDiff: score.yearDiff,
     correctYear: round.event.year, correctLat: round.event.lat, correctLng: round.event.lng,
     correctLocationName: round.event.locationName, correctEventName: round.event.eventName,
+    correctEra: round.event.era,
     gameTotalScore: game.totalScore, gameComplete: game.currentRound >= game.rounds.length
   });
 });

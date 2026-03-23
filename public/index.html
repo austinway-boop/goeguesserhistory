@@ -5,15 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HistoryGuessr</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <script src="https://unpkg.com/globe.gl@2.35.1/dist/globe.gl.min.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     body { font-family: 'DM Sans', system-ui, sans-serif; background: #faf9f7; color: #1a1a1a; height: 100vh; overflow: hidden; }
-
     .screen { display: none; height: 100vh; width: 100vw; position: absolute; inset: 0; }
     .screen.active { display: flex; }
 
+    /* Landing */
     #landing { flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 32px; }
     .brand { font-size: clamp(2.4rem, 6vw, 3.6rem); font-weight: 700; letter-spacing: -0.5px; margin-bottom: 10px; }
     .tagline { font-size: 1.05rem; color: #777; margin-bottom: 44px; max-width: 380px; line-height: 1.5; }
@@ -24,6 +24,7 @@
     .btn { padding: 14px 52px; font-family: inherit; font-size: 1rem; font-weight: 700; color: #fff; background: #1a1a1a; border: none; border-radius: 8px; cursor: pointer; }
     .btn:hover { background: #333; }
 
+    /* Loading */
     #loading { flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px 24px; }
     .spinner { width: 40px; height: 40px; border: 3px solid #e5e5e5; border-top-color: #1a1a1a; border-radius: 50%; animation: spin 0.7s linear infinite; margin-bottom: 20px; }
     @keyframes spin { to { transform: rotate(360deg); } }
@@ -33,6 +34,7 @@
     .fact-label { font-size: 0.6rem; font-weight: 700; letter-spacing: 1px; color: #aaa; margin-bottom: 8px; text-transform: uppercase; }
     .btn-retry { padding: 8px 24px; font-family: inherit; font-size: 0.85rem; font-weight: 600; color: #fff; background: #1a1a1a; border: none; border-radius: 6px; cursor: pointer; margin-bottom: 16px; }
 
+    /* Playing */
     #playing { position: relative; background: #111; }
     .hud { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); z-index: 100; display: flex; gap: 8px; }
     .hud-chip { background: #fff; border-radius: 6px; padding: 6px 14px; font-size: 0.78rem; font-weight: 700; box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
@@ -40,79 +42,101 @@
     .video-bg video { width: 100%; height: 100%; object-fit: cover; }
 
     .tray {
-      position: absolute;
-      bottom: 16px;
-      right: 16px;
-      z-index: 200;
-      display: flex;
-      flex-direction: column;
-      border-radius: 10px;
-      overflow: visible;
-      width: 280px;
-      transition: width 0.3s ease;
+      position: absolute; bottom: 16px; right: 16px; z-index: 200;
+      width: 380px; display: flex; flex-direction: column;
+      border-radius: 12px; overflow: hidden;
+      box-shadow: 0 4px 32px rgba(0,0,0,0.35);
     }
 
-    .tray:hover, .tray.pinned { width: 420px; }
-    .tray:hover .globe-box, .tray.pinned .globe-box { height: 340px; }
-
-    .globe-box {
-      height: 200px;
-      border-radius: 10px 10px 0 0;
-      overflow: hidden;
-      position: relative;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.3);
-      transition: height 0.3s ease;
-      background: #0a0a14;
-      cursor: grab;
-    }
-
-    .globe-box:active { cursor: grabbing; }
-
-    .pin-btn {
-      position: absolute; top: 6px; right: 6px; z-index: 600;
-      width: 26px; height: 26px; background: rgba(255,255,255,0.9); border: none; border-radius: 4px;
-      cursor: pointer; font-size: 0.7rem; display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.2); color: #333;
-    }
+    .map-box { height: 260px; position: relative; }
+    .map-box #guessMap { width: 100%; height: 100%; cursor: crosshair !important; }
 
     .controls {
-      background: #fff;
-      border-radius: 0 0 10px 10px;
-      padding: 12px 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+      background: #fff; padding: 16px 18px;
+      display: flex; flex-direction: column; gap: 14px;
     }
 
-    .yr-row { display: flex; align-items: center; gap: 8px; }
-    .yr-lbl { font-size: 0.62rem; font-weight: 700; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px; }
-    .yr-slider { flex: 1; -webkit-appearance: none; appearance: none; height: 4px; background: #e5e5e5; border-radius: 2px; outline: none; cursor: pointer; }
-    .yr-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #1a1a1a; cursor: pointer; }
-    .yr-slider::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: #1a1a1a; cursor: pointer; border: none; }
-    .yr-val { font-size: 0.9rem; font-weight: 700; min-width: 82px; text-align: right; }
-    .yr-ticks { display: flex; justify-content: space-between; font-size: 0.5rem; color: #bbb; font-weight: 600; margin-top: -2px; }
-    .btn-guess { width: 100%; padding: 10px; font-family: inherit; font-size: 0.9rem; font-weight: 700; color: #fff; background: #1a1a1a; border: none; border-radius: 6px; cursor: pointer; }
+    .yr-section { display: flex; flex-direction: column; gap: 6px; }
+    .yr-header { display: flex; justify-content: space-between; align-items: baseline; }
+    .yr-lbl { font-size: 0.65rem; font-weight: 700; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px; }
+    .yr-val { font-size: 1.3rem; font-weight: 700; }
+
+    .yr-slider {
+      width: 100%; -webkit-appearance: none; appearance: none;
+      height: 8px; background: #e5e5e5; border-radius: 4px; outline: none; cursor: pointer;
+    }
+    .yr-slider::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 24px; height: 24px; border-radius: 50%;
+      background: #1a1a1a; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .yr-slider::-moz-range-thumb {
+      width: 24px; height: 24px; border-radius: 50%;
+      background: #1a1a1a; cursor: pointer; border: none;
+    }
+
+    .yr-ticks { display: flex; justify-content: space-between; font-size: 0.55rem; color: #bbb; font-weight: 600; }
+    .yr-era-labels { display: flex; justify-content: space-between; margin-top: 2px; }
+    .yr-era { font-size: 0.5rem; color: #ccc; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+
+    .btn-guess {
+      width: 100%; padding: 12px; font-family: inherit; font-size: 0.95rem; font-weight: 700;
+      color: #fff; background: #1a1a1a; border: none; border-radius: 8px; cursor: pointer;
+    }
     .btn-guess:hover:not(:disabled) { background: #333; }
     .btn-guess:disabled { opacity: 0.3; cursor: not-allowed; }
 
+    /* Result */
     #result { flex-direction: column; background: #faf9f7; }
-    .res-top { text-align: center; padding: 14px 20px; background: #fff; border-bottom: 1px solid #eee; }
-    .res-name { font-size: 1.1rem; font-weight: 700; }
+    .res-top { text-align: center; padding: 16px 20px; background: #fff; border-bottom: 1px solid #eee; }
+    .res-name { font-size: 1.15rem; font-weight: 700; }
     .res-loc { font-size: 0.78rem; color: #888; margin-top: 2px; }
     .res-mid { display: flex; flex: 1; overflow: hidden; }
-    .res-globe { flex: 1; background: #0a0a14; position: relative; overflow: hidden; }
-    .res-side { width: 320px; padding: 18px; background: #fff; border-left: 1px solid #eee; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; }
-    .score-box { text-align: center; padding: 16px; border: 1px solid #eee; border-radius: 8px; }
+    #resultMap { flex: 1; }
+
+    .res-side {
+      width: 380px; padding: 20px; background: #fff; border-left: 1px solid #eee;
+      display: flex; flex-direction: column; gap: 16px; overflow-y: auto;
+    }
+
+    .score-box { text-align: center; padding: 18px; border: 1px solid #eee; border-radius: 10px; }
     .score-box-label { font-size: 0.58rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #aaa; margin-bottom: 2px; }
-    .score-box-val { font-size: 2rem; font-weight: 700; }
-    .st { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 0.78rem; }
+    .score-box-val { font-size: 2.2rem; font-weight: 700; }
+
+    .timeline-viz { padding: 14px 0; }
+    .timeline-label { font-size: 0.6rem; font-weight: 700; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .timeline-bar { position: relative; height: 6px; background: #eee; border-radius: 3px; }
+    .timeline-range { position: absolute; top: 0; height: 100%; background: #ddd; border-radius: 3px; }
+    .timeline-marker {
+      position: absolute; top: -6px; width: 18px; height: 18px; border-radius: 50%;
+      border: 3px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+      transform: translateX(-50%);
+    }
+    .timeline-marker.guess { background: #e74c3c; }
+    .timeline-marker.correct { background: #2ecc71; }
+    .timeline-marker-label {
+      position: absolute; top: 16px; font-size: 0.55rem; font-weight: 700;
+      white-space: nowrap; transform: translateX(-50%);
+    }
+    .timeline-marker-label.guess { color: #e74c3c; }
+    .timeline-marker-label.correct { color: #2ecc71; }
+    .timeline-ends { display: flex; justify-content: space-between; font-size: 0.5rem; color: #bbb; font-weight: 600; margin-top: 20px; }
+
+    .event-desc {
+      padding: 14px; background: #f7f6f4; border-radius: 8px;
+      font-size: 0.78rem; line-height: 1.6; color: #555;
+    }
+    .event-desc strong { color: #1a1a1a; }
+
+    .stats { }
+    .st { display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid #f0f0f0; font-size: 0.76rem; }
     .st:last-child { border-bottom: none; }
     .st-k { color: #999; }
     .st-v { font-weight: 700; }
-    .btn-next { margin-top: auto; padding: 11px; font-family: inherit; font-size: 0.9rem; font-weight: 700; color: #fff; background: #1a1a1a; border: none; border-radius: 6px; cursor: pointer; }
+
+    .btn-next { margin-top: auto; padding: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 700; color: #fff; background: #1a1a1a; border: none; border-radius: 8px; cursor: pointer; }
     .btn-next:hover { background: #333; }
 
+    /* Final */
     #final { flex-direction: column; align-items: center; justify-content: center; padding: 32px 24px; overflow-y: auto; }
     .f-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #aaa; margin-bottom: 6px; }
     .f-score { font-size: clamp(2.5rem, 7vw, 4rem); font-weight: 700; margin-bottom: 2px; }
@@ -125,9 +149,12 @@
     .f-loc { font-size: 0.65rem; color: #999; }
     .f-pts { font-size: 0.88rem; font-weight: 700; }
 
+    .leaflet-container { background: #f5f3ef; cursor: crosshair !important; }
+    .leaflet-control-attribution { display: none !important; }
+
     @media (max-width: 700px) {
-      .tray { width: 240px; right: 8px; bottom: 8px; }
-      .tray:hover, .tray.pinned { width: 100vw; right: 0; bottom: 0; border-radius: 10px 10px 0 0; }
+      .tray { width: calc(100vw - 24px); right: 12px; bottom: 12px; }
+      .map-box { height: 200px; }
       .res-mid { flex-direction: column; }
       .res-side { width: 100%; border-left: none; border-top: 1px solid #eee; }
     }
@@ -162,18 +189,26 @@
       <div class="hud-chip" id="hudScore">0 pts</div>
     </div>
     <div class="video-bg"><video id="gameVideo" autoplay loop muted playsinline></video></div>
-    <div class="tray" id="tray">
-      <div class="globe-box" id="globeBox">
-        <button class="pin-btn" id="pinBtn" onclick="togglePin()">&#x1F4CC;</button>
-      </div>
+    <div class="tray">
+      <div class="map-box"><div id="guessMap"></div></div>
       <div class="controls">
-        <div class="yr-row">
-          <span class="yr-lbl">Year</span>
+        <div class="yr-section">
+          <div class="yr-header">
+            <span class="yr-lbl">When did this happen?</span>
+            <span class="yr-val" id="yearDisplay">1000 AD</span>
+          </div>
           <input class="yr-slider" type="range" id="yearSlider" min="-3000" max="2025" value="1000" step="1">
-          <span class="yr-val" id="yearDisplay">1000 AD</span>
+          <div class="yr-ticks">
+            <span>3000 BC</span><span>1500 BC</span><span>1 AD</span><span>1000</span><span>2025</span>
+          </div>
+          <div class="yr-era-labels">
+            <span class="yr-era">Ancient</span>
+            <span class="yr-era">Classical</span>
+            <span class="yr-era">Medieval</span>
+            <span class="yr-era">Modern</span>
+          </div>
         </div>
-        <div class="yr-ticks"><span>3000 BC</span><span>1000 BC</span><span>1 AD</span><span>1000</span><span>2025</span></div>
-        <button class="btn-guess" id="guessBtn" disabled onclick="submitGuess()">Place a pin first</button>
+        <button class="btn-guess" id="guessBtn" disabled onclick="submitGuess()">Click the map to place a pin</button>
       </div>
     </div>
   </div>
@@ -184,20 +219,35 @@
       <div class="res-loc" id="resPlace"></div>
     </div>
     <div class="res-mid">
-      <div class="res-globe" id="resGlobeBox"></div>
+      <div id="resultMap"></div>
       <div class="res-side">
         <div class="score-box">
           <div class="score-box-label">Round Score</div>
           <div class="score-box-val" id="resScore">0</div>
         </div>
-        <div>
-          <div class="st"><span class="st-k">Location</span><span class="st-v" id="resLocScore">0 / 5,000</span></div>
-          <div class="st"><span class="st-k">Distance</span><span class="st-v" id="resDist">0 km</span></div>
-          <div class="st"><span class="st-k">Time</span><span class="st-v" id="resTimeScore">0 / 5,000</span></div>
-          <div class="st"><span class="st-k">Off by</span><span class="st-v" id="resYearDiff">0 years</span></div>
-          <div class="st"><span class="st-k">You said</span><span class="st-v" id="resGuessYear">-</span></div>
-          <div class="st"><span class="st-k">Answer</span><span class="st-v" id="resCorrectYear">-</span></div>
-          <div class="st" style="border-top:1px solid #eee;padding-top:10px;margin-top:4px"><span class="st-k">Total</span><span class="st-v" id="resGameTotal">0</span></div>
+
+        <div class="timeline-viz">
+          <div class="timeline-label">Timeline</div>
+          <div class="timeline-bar" id="timelineBar">
+            <div class="timeline-range" id="timelineRange"></div>
+            <div class="timeline-marker guess" id="tmGuess"></div>
+            <div class="timeline-marker-label guess" id="tmGuessLabel"></div>
+            <div class="timeline-marker correct" id="tmCorrect"></div>
+            <div class="timeline-marker-label correct" id="tmCorrectLabel"></div>
+          </div>
+          <div class="timeline-ends"><span>3000 BC</span><span>2025 AD</span></div>
+        </div>
+
+        <div class="event-desc" id="eventDesc"></div>
+
+        <div class="stats">
+          <div class="st"><span class="st-k">Location</span><span class="st-v" id="resLocScore"></span></div>
+          <div class="st"><span class="st-k">Distance off</span><span class="st-v" id="resDist"></span></div>
+          <div class="st"><span class="st-k">Time</span><span class="st-v" id="resTimeScore"></span></div>
+          <div class="st"><span class="st-k">Years off</span><span class="st-v" id="resYearDiff"></span></div>
+          <div class="st" style="border-top:1px solid #eee;padding-top:8px;margin-top:4px">
+            <span class="st-k">Game total</span><span class="st-v" id="resGameTotal"></span>
+          </div>
         </div>
         <button class="btn-next" id="nextBtn" onclick="nextRound()">Next round</button>
       </div>
@@ -214,12 +264,8 @@
 
   <script>
     let gameId, currentRound = 0, totalScore = 0;
-    let guessGlobe, resultGlobe;
-    let guessPin = null, yearTouched = false, trayPinned = false;
-
-    const EARTH_DAY = 'https://unpkg.com/three-globe@2.35.1/example/img/earth-blue-marble.jpg';
-    const EARTH_TOPO = 'https://unpkg.com/three-globe@2.35.1/example/img/earth-topology.png';
-    const NIGHT_SKY = '//unpkg.com/three-globe@2.35.1/example/img/night-sky.png';
+    let guessMap, guessMarker, resultMap;
+    let yearTouched = false;
 
     const FACTS = [
       "The Great Pyramid was the tallest structure on Earth for 3,800 years.",
@@ -237,12 +283,56 @@
       "The Library of Alexandria declined over centuries, not in a single fire."
     ];
 
+    const EVENT_INFO = {
+      'Construction of the Great Pyramid': 'The Great Pyramid of Giza was built around 2560 BC as a tomb for Pharaoh Khufu. It took roughly 20 years and tens of thousands of workers to complete. At 146 meters tall, it remained the tallest man-made structure on Earth for over 3,800 years.',
+      'Hanging Gardens of Babylon': 'The Hanging Gardens were one of the Seven Wonders of the Ancient World, supposedly built by King Nebuchadnezzar II around 600 BC for his wife who missed the green hills of her homeland. Whether they actually existed is still debated by historians.',
+      'Completion of the Parthenon': 'The Parthenon was completed in 438 BC on the Acropolis of Athens. Dedicated to the goddess Athena, it housed a massive gold-and-ivory statue by the sculptor Phidias. Its columns were originally painted in vivid colors, not the white we see today.',
+      'Battle of Gaugamela': 'In 331 BC, Alexander the Great defeated the Persian King Darius III at Gaugamela (modern Iraq), effectively ending the Achaemenid Empire. Alexander was 25 years old and commanded around 47,000 troops against a Persian army several times larger.',
+      'Construction of the Great Wall': 'The first major construction of the Great Wall began under Emperor Qin Shi Huang around 210 BC to protect against northern nomadic invasions. The rammed-earth walls of the Qin era are very different from the stone walls built much later during the Ming Dynasty.',
+      'Assassination of Julius Caesar': 'On March 15, 44 BC (the Ides of March), Julius Caesar was assassinated by a group of Roman senators in the Theatre of Pompey. His death triggered a series of civil wars that ended the Roman Republic and led to the Roman Empire.',
+      'Opening of the Colosseum': 'The Flavian Amphitheatre (Colosseum) opened in 80 AD under Emperor Titus with 100 days of games. It could seat 50,000 spectators who watched gladiatorial combat, animal hunts, and mock naval battles. Entry was free for Roman citizens.',
+      'Eruption of Mount Vesuvius': 'On August 24, 79 AD, Mount Vesuvius erupted and buried the Roman cities of Pompeii and Herculaneum under volcanic ash. The eruption killed an estimated 16,000 people. The preserved ruins were rediscovered in 1748.',
+      'Founding of Constantinople': 'In 330 AD, Emperor Constantine I refounded the ancient city of Byzantium as Constantinople, making it the new capital of the Roman Empire. The city would serve as the capital of the Byzantine Empire for over 1,000 years.',
+      'Viking Raid on Lindisfarne': 'The Viking raid on the monastery of Lindisfarne in 793 AD is traditionally considered the beginning of the Viking Age. Norse raiders from Scandinavia attacked the wealthy but undefended monastery on a small island off northeast England.',
+      'Angkor Wat at its peak': 'Angkor Wat was built in the early 12th century by King Suryavarman II of the Khmer Empire. Originally a Hindu temple dedicated to Vishnu, it is the largest religious monument ever built and the heart of a city that may have housed a million people.',
+      'Construction of Notre-Dame Cathedral': 'Construction of Notre-Dame de Paris began in 1163 and was largely complete by 1260. It pioneered the use of flying buttresses, which allowed the walls to be thinner and filled with stained glass. It was one of the first great Gothic cathedrals.',
+      'Mongol Siege of Samarkand': 'In 1220, Genghis Khan\'s Mongol army conquered Samarkand, one of the greatest cities on the Silk Road. The Mongol Empire would eventually become the largest contiguous land empire in history, stretching from Korea to Eastern Europe.',
+      'The Black Death reaches London': 'The Black Death arrived in England in 1348, killing an estimated 30-60% of Europe\'s population over several years. The plague was caused by the bacterium Yersinia pestis and spread via fleas on rats. It fundamentally reshaped European society.',
+      'Completion of the Forbidden City': 'The Forbidden City was completed in 1420 under the Yongle Emperor of the Ming Dynasty. With 980 buildings and covering 72 hectares, it served as the Chinese imperial palace for nearly 500 years and 24 emperors.',
+      'Construction of Machu Picchu': 'Machu Picchu was built around 1450 as a royal estate for the Inca Emperor Pachacuti. Located 2,430 meters above sea level in the Andes, its precisely fitted stone walls were constructed without mortar and have survived centuries of earthquakes.',
+      'Fall of Constantinople': 'On May 29, 1453, Ottoman Sultan Mehmed II conquered Constantinople, ending the 1,100-year-old Byzantine Empire. The massive Orban cannon breached the ancient Theodosian Walls. The city was renamed Istanbul.',
+      'Columbus arrives in the New World': 'On October 12, 1492, Christopher Columbus landed in the Bahamas, believing he had reached Asia. His three ships\u2014the Santa Mar\u00eda, Pinta, and Ni\u00f1a\u2014had sailed for five weeks from Spain. This voyage began the era of European colonization of the Americas.',
+      'Completion of the Taj Mahal': 'The Taj Mahal was completed around 1643 by Mughal Emperor Shah Jahan as a mausoleum for his beloved wife Mumtaz Mahal, who died during childbirth. It took 22 years and 20,000 workers to build.',
+      'Signing of the Declaration of Independence': 'On July 4, 1776, the Continental Congress adopted the Declaration of Independence, formally breaking the 13 American colonies away from British rule. Thomas Jefferson was the principal author.',
+      'Storming of the Bastille': 'On July 14, 1789, a Parisian mob stormed the Bastille fortress-prison, a symbol of royal tyranny. The event is considered the start of the French Revolution, which would abolish the monarchy and reshape Europe.',
+      'Battle of Waterloo': 'On June 18, 1815, Napoleon was decisively defeated at Waterloo in present-day Belgium by the Duke of Wellington and Prussian forces under Bl\u00fccher. It ended 23 years of nearly continuous warfare in Europe.',
+      'Battle of Gettysburg': 'The Battle of Gettysburg (July 1-3, 1863) was the bloodiest battle of the American Civil War, with roughly 50,000 casualties. The Union victory is considered the turning point of the war.',
+      'Eiffel Tower opens for the World\'s Fair': 'The Eiffel Tower was built for the 1889 World\'s Fair celebrating the 100th anniversary of the French Revolution. Originally planned as a temporary structure, many Parisians hated it. Gustave Eiffel\'s 300-meter iron tower was the world\'s tallest structure until 1930.',
+      'D-Day Invasion': 'On June 6, 1944, Allied forces landed on five beaches in Normandy, France, in the largest amphibious invasion in history. Over 156,000 troops crossed the English Channel. The invasion began the liberation of Western Europe from Nazi occupation.',
+      'Apollo 11 Launch': 'On July 16, 1969, the Saturn V rocket launched Apollo 11 from Kennedy Space Center. Four days later, Neil Armstrong and Buzz Aldrin became the first humans to walk on the Moon, while Michael Collins orbited above.',
+      'Fall of the Berlin Wall': 'On November 9, 1989, the East German government opened the Berlin Wall after 28 years. Jubilant crowds from both sides climbed the wall and began tearing it apart. German reunification followed on October 3, 1990.',
+      'Battle of the Somme': 'The Battle of the Somme (July-November 1916) was one of WWI\'s bloodiest battles. On the first day alone, the British suffered 57,470 casualties. The battle introduced tanks to warfare for the first time.',
+      'Storming of the Winter Palace': 'On October 25, 1917, Bolshevik Red Guards stormed the Winter Palace in Petrograd, overthrowing the Provisional Government. This event, later mythologized by Soviet propaganda, marked the beginning of Communist rule in Russia.',
+      'Industrial Revolution London': 'By 1850, London was the world\'s largest city and the capital of the Industrial Revolution. Factories, railways, and steam power had transformed Britain. But the era also brought terrible pollution, child labor, and urban poverty.',
+      'California Gold Rush': 'The California Gold Rush began in 1848 when gold was found at Sutter\'s Mill. By 1849, some 300,000 people had flocked to California. The Gold Rush accelerated California\'s statehood and transformed San Francisco from a small settlement into a boomtown.',
+      'Ellis Island Opens for Immigration': 'Ellis Island opened as a federal immigration station on January 1, 1892. Over the next 62 years, more than 12 million immigrants passed through it. At its peak, inspectors processed up to 5,000 people per day.',
+      'First Powered Flight': 'On December 17, 1903, Orville Wright piloted the Wright Flyer for 12 seconds and 120 feet at Kill Devil Hills, North Carolina. It was the first sustained, controlled, powered heavier-than-air flight in history.',
+      'RMS Titanic Departs Southampton': 'RMS Titanic departed Southampton on April 10, 1912, on her maiden voyage to New York. Four days later she struck an iceberg and sank, killing over 1,500 of the 2,224 people on board. It remains one of the deadliest peacetime maritime disasters.',
+      'The Roaring Twenties in New York': 'The 1920s in America were marked by jazz, flappers, Prohibition, and an economic boom. New York\'s Times Square became the center of a new mass culture of nightlife, advertising, and entertainment.',
+      'Court of Louis XIV at Versailles': 'In 1682, Louis XIV moved the French royal court to the Palace of Versailles, consolidating his absolute power by keeping the nobility close. The Hall of Mirrors, with its 357 mirrors, became the symbol of French royal excess.',
+      'Battle of Sekigahara': 'The Battle of Sekigahara in 1600 was the decisive battle that unified Japan under Tokugawa Ieyasu, beginning the Edo period of 250 years of peace and isolation. Over 160,000 samurai fought in the misty valley.',
+      'Boston Tea Party': 'On December 16, 1773, American colonists dumped 342 chests of British East India Company tea into Boston Harbor to protest taxation without representation. It was a key event leading to the American Revolution.',
+      'Hindenburg Disaster': 'On May 6, 1937, the German airship Hindenburg caught fire while landing at Lakehurst, New Jersey, killing 36 people. The disaster, captured on film and radio, effectively ended the era of passenger airships.',
+    };
+
     function show(id) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById(id).classList.add('active');
     }
 
     function fmtYear(y) { return y < 0 ? Math.abs(y) + ' BC' : y === 0 ? '1 BC' : y + ' AD'; }
+
+    function yearToPercent(y) { return ((y + 3000) / 5025) * 100; }
 
     let factTimer;
     function startFacts() {
@@ -256,75 +346,10 @@
     }
     function stopFacts() { clearInterval(factTimer); }
 
-    function togglePin() {
-      trayPinned = !trayPinned;
-      document.getElementById('tray').classList.toggle('pinned', trayPinned);
-      setTimeout(() => { if (guessGlobe) resizeGuessGlobe(); }, 350);
-    }
-
-    function resizeGuessGlobe() {
-      const c = document.getElementById('globeBox');
-      if (guessGlobe) guessGlobe.width(c.clientWidth).height(c.clientHeight);
-    }
-
-    function applyYearTint(year) {
-      if (!guessGlobe) return;
-      const t = Math.max(0, Math.min(1, (year + 3000) / 5025));
-      const saturation = t;
-      const scene = guessGlobe.scene();
-      if (scene && scene.children) {
-        scene.traverse(child => {
-          if (child.isMesh && child.material && child.material.color) {
-            child.material.color.setHSL(0, 0, 0.5 + saturation * 0.5);
-          }
-        });
-      }
-      const container = document.getElementById('globeBox');
-      const gray = 1 - saturation;
-      container.style.filter = `grayscale(${(gray * 100).toFixed(0)}%)`;
-    }
-
-    function initGuessGlobe() {
-      const container = document.getElementById('globeBox');
-      if (guessGlobe) {
-        guessGlobe.pointsData([]);
-        guessPin = null;
-        resizeGuessGlobe();
-        return;
-      }
-
-      guessGlobe = Globe()
-        .globeImageUrl(EARTH_DAY)
-        .bumpImageUrl(EARTH_TOPO)
-        .backgroundImageUrl(NIGHT_SKY)
-        .width(container.clientWidth)
-        .height(container.clientHeight)
-        .atmosphereColor('#888')
-        .atmosphereAltitude(0.15)
-        .pointsData([])
-        .pointAltitude(0.05)
-        .pointRadius(0.5)
-        .pointColor(() => '#e74c3c')
-        .onGlobeClick(({ lat, lng }) => {
-          guessPin = { lat, lng };
-          guessGlobe.pointsData([{ lat, lng }]);
-          updateBtn();
-        })
-        (container);
-
-      guessGlobe.controls().autoRotate = true;
-      guessGlobe.controls().autoRotateSpeed = 0.4;
-      guessGlobe.pointOfView({ lat: 20, lng: 0, altitude: 2.2 });
-
-      new ResizeObserver(() => resizeGuessGlobe()).observe(container);
-    }
-
-    // ─── Game Flow ───
-
     let pendingRound = 0;
 
     async function startGame() {
-      totalScore = 0; currentRound = 0; yearTouched = false; guessPin = null; trayPinned = false;
+      totalScore = 0; currentRound = 0; yearTouched = false; guessMarker = null;
       show('loading');
       document.getElementById('loadingSpinner').style.display = 'block';
       document.getElementById('loadTitle').textContent = 'Generating your scene...';
@@ -369,53 +394,72 @@
     }
 
     function showPlaying(rn, url) {
-      currentRound = rn; yearTouched = false; guessPin = null; trayPinned = false;
+      currentRound = rn; yearTouched = false;
       document.getElementById('hudRound').textContent = 'Round ' + (rn + 1) + ' of 5';
       document.getElementById('hudScore').textContent = totalScore.toLocaleString() + ' pts';
       const v = document.getElementById('gameVideo'); v.src = url; v.play().catch(() => {});
       document.getElementById('yearSlider').value = 1000;
       document.getElementById('yearDisplay').textContent = '1000 AD';
       document.getElementById('guessBtn').disabled = true;
-      document.getElementById('guessBtn').textContent = 'Place a pin first';
-      document.getElementById('tray').classList.remove('pinned');
-      document.getElementById('globeBox').style.filter = '';
+      document.getElementById('guessBtn').textContent = 'Click the map to place a pin';
       show('playing');
 
       setTimeout(() => {
-        initGuessGlobe();
-        applyYearTint(1000);
-      }, 200);
+        if (!guessMap) {
+          guessMap = L.map('guessMap', { center: [20, 0], zoom: 2, minZoom: 1, maxZoom: 18, worldCopyJump: true, zoomControl: false });
+          L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { subdomains: 'abcd', maxZoom: 20 }).addTo(guessMap);
+          L.control.zoom({ position: 'topright' }).addTo(guessMap);
+          guessMap.on('click', onMapClick);
+        } else {
+          guessMap.setView([20, 0], 2);
+        }
+        if (guessMarker) { guessMap.removeLayer(guessMarker); guessMarker = null; }
+        guessMap.invalidateSize();
+      }, 150);
+    }
+
+    function onMapClick(e) {
+      if (guessMarker) guessMarker.setLatLng(e.latlng);
+      else {
+        guessMarker = L.marker(e.latlng, {
+          icon: L.divIcon({
+            className: '',
+            html: '<div style="width:22px;height:22px;background:#e74c3c;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.3);transform:translate(-11px,-11px)"></div>',
+            iconSize: [0, 0]
+          })
+        }).addTo(guessMap);
+      }
+      updateBtn();
     }
 
     document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('yearSlider').addEventListener('input', function () {
         yearTouched = true;
-        const val = parseInt(this.value);
-        document.getElementById('yearDisplay').textContent = fmtYear(val);
-        applyYearTint(val);
+        document.getElementById('yearDisplay').textContent = fmtYear(parseInt(this.value));
         updateBtn();
       });
     });
 
     function updateBtn() {
-      const ok = guessPin && yearTouched;
+      const ok = guessMarker && yearTouched;
       const b = document.getElementById('guessBtn');
       b.disabled = !ok;
-      b.textContent = ok ? 'Submit guess' : (!guessPin ? 'Place a pin first' : 'Now pick a year');
+      b.textContent = ok ? 'Submit guess' : (!guessMarker ? 'Click the map to place a pin' : 'Now drag the year slider');
     }
 
     async function submitGuess() {
-      if (!guessPin || !yearTouched) return;
+      if (!guessMarker || !yearTouched) return;
       const b = document.getElementById('guessBtn'); b.disabled = true; b.textContent = '...';
+      const ll = guessMarker.getLatLng();
       const yr = parseInt(document.getElementById('yearSlider').value);
       try {
         const r = await fetch(`/api/game/${gameId}/round/${currentRound}/guess`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ year: yr, lat: guessPin.lat, lng: guessPin.lng })
+          body: JSON.stringify({ year: yr, lat: ll.lat, lng: ll.lng })
         });
         const d = await r.json();
         totalScore = d.gameTotalScore;
-        showResult(d, guessPin.lat, guessPin.lng, yr);
+        showResult(d, ll.lat, ll.lng, yr);
       } catch { b.disabled = false; b.textContent = 'Submit guess'; }
     }
 
@@ -427,59 +471,42 @@
       document.getElementById('resDist').textContent = d.distanceKm.toLocaleString() + ' km';
       document.getElementById('resTimeScore').textContent = d.timeScore.toLocaleString() + ' / 5,000';
       document.getElementById('resYearDiff').textContent = d.yearDiff.toLocaleString() + ' years';
-      document.getElementById('resGuessYear').textContent = fmtYear(gYear);
-      document.getElementById('resCorrectYear').textContent = fmtYear(d.correctYear);
       document.getElementById('resGameTotal').textContent = d.gameTotalScore.toLocaleString();
       document.getElementById('nextBtn').textContent = currentRound >= 4 ? 'See results' : 'Next round';
+
+      const gPct = yearToPercent(gYear);
+      const cPct = yearToPercent(d.correctYear);
+      const minPct = Math.min(gPct, cPct);
+      const maxPct = Math.max(gPct, cPct);
+      document.getElementById('timelineRange').style.left = minPct + '%';
+      document.getElementById('timelineRange').style.width = (maxPct - minPct) + '%';
+      document.getElementById('timelineRange').style.background = d.yearDiff < 50 ? '#c8f7dc' : d.yearDiff < 200 ? '#fef3c7' : '#fecaca';
+      document.getElementById('tmGuess').style.left = gPct + '%';
+      document.getElementById('tmGuessLabel').style.left = gPct + '%';
+      document.getElementById('tmGuessLabel').textContent = fmtYear(gYear);
+      document.getElementById('tmCorrect').style.left = cPct + '%';
+      document.getElementById('tmCorrectLabel').style.left = cPct + '%';
+      document.getElementById('tmCorrectLabel').textContent = fmtYear(d.correctYear);
+
+      const info = EVENT_INFO[d.correctEventName];
+      document.getElementById('eventDesc').innerHTML = info
+        ? '<strong>' + d.correctEventName + ':</strong> ' + info
+        : '<strong>' + d.correctEventName + '</strong> \u2014 ' + d.correctLocationName + ', ' + fmtYear(d.correctYear);
+
       show('result');
 
-      setTimeout(() => initResultGlobe(gLat, gLng, d.correctLat, d.correctLng), 150);
-    }
+      if (resultMap) { resultMap.remove(); resultMap = null; }
+      resultMap = L.map('resultMap', { center: [0, 0], zoom: 2, worldCopyJump: true, zoomControl: false });
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { subdomains: 'abcd', maxZoom: 20 }).addTo(resultMap);
 
-    function initResultGlobe(gLat, gLng, cLat, cLng) {
-      const container = document.getElementById('resGlobeBox');
-      container.innerHTML = '';
+      const gi = L.divIcon({ className: '', html: '<div style="width:18px;height:18px;background:#e74c3c;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.3);transform:translate(-9px,-9px)"></div>', iconSize: [0, 0] });
+      const ci = L.divIcon({ className: '', html: '<div style="width:18px;height:18px;background:#2ecc71;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.3);transform:translate(-9px,-9px)"></div>', iconSize: [0, 0] });
 
-      resultGlobe = Globe()
-        .globeImageUrl(EARTH_DAY)
-        .bumpImageUrl(EARTH_TOPO)
-        .backgroundImageUrl(NIGHT_SKY)
-        .width(container.clientWidth)
-        .height(container.clientHeight)
-        .atmosphereColor('#888')
-        .atmosphereAltitude(0.15)
-        .arcsData([{
-          startLat: gLat, startLng: gLng, endLat: cLat, endLng: cLng,
-          color: ['#e74c3c', '#2ecc71']
-        }])
-        .arcColor('color')
-        .arcDashLength(0.4)
-        .arcDashGap(0.2)
-        .arcDashAnimateTime(2500)
-        .arcStroke(1)
-        .pointsData([
-          { lat: gLat, lng: gLng, color: '#e74c3c', size: 0.5 },
-          { lat: cLat, lng: cLng, color: '#2ecc71', size: 0.7 }
-        ])
-        .pointAltitude(0.05)
-        .pointRadius('size')
-        .pointColor('color')
-        .ringsData([{ lat: cLat, lng: cLng, maxR: 4, propagationSpeed: 2, repeatPeriod: 1200, color: () => 'rgba(46, 204, 113, 0.6)' }])
-        .ringColor('color')
-        .ringMaxRadius('maxR')
-        .ringPropagationSpeed('propagationSpeed')
-        .ringRepeatPeriod('repeatPeriod')
-        (container);
-
-      resultGlobe.pointOfView({ lat: gLat, lng: gLng, altitude: 2.5 });
-
-      setTimeout(() => {
-        resultGlobe.pointOfView({ lat: cLat, lng: cLng, altitude: 1.8 }, 2000);
-      }, 800);
-
-      new ResizeObserver(() => {
-        if (resultGlobe) resultGlobe.width(container.clientWidth).height(container.clientHeight);
-      }).observe(container);
+      L.marker([gLat, gLng], { icon: gi }).addTo(resultMap).bindPopup('<b>Your guess</b><br>' + fmtYear(gYear));
+      L.marker([d.correctLat, d.correctLng], { icon: ci }).addTo(resultMap).bindPopup('<b>' + d.correctEventName + '</b><br>' + d.correctLocationName);
+      L.polyline([[gLat, gLng], [d.correctLat, d.correctLng]], { color: '#e74c3c', weight: 2.5, dashArray: '6,5', opacity: 0.7 }).addTo(resultMap);
+      resultMap.fitBounds([[gLat, gLng], [d.correctLat, d.correctLng]], { padding: [50, 50], maxZoom: 8 });
+      setTimeout(() => resultMap.invalidateSize(), 100);
     }
 
     async function nextRound() {
