@@ -12,7 +12,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 const FAL_KEY = process.env.FAL_KEY;
 const FAL_QUEUE_URL = 'https://queue.fal.run';
-const VIDEO_MODEL = 'fal-ai/luma-dream-machine/ray-2';
+const VIDEO_MODEL = 'fal-ai/kling-video/v2/master/text-to-video';
 
 // ─── Curated Historical Events ───
 
@@ -189,8 +189,10 @@ function pickRandomEvents(count) {
 async function submitVideoGeneration(prompt) {
   const body = {
     prompt,
+    duration: '5',
     aspect_ratio: '16:9',
-    loop: true
+    negative_prompt: 'blur, distort, low quality, text, watermark, logo, modern elements, anachronistic',
+    cfg_scale: 0.5
   };
 
   const response = await fetch(`${FAL_QUEUE_URL}/${VIDEO_MODEL}`, {
