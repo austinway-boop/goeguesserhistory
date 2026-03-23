@@ -5,30 +5,37 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HistoryGuessr</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #0a0a0f;
-      --surface: #14141e;
-      --surface2: #1c1c2a;
-      --border: #2a2a3a;
-      --text: #e8e8f0;
-      --text-dim: #8888a0;
-      --accent: #6c5ce7;
-      --accent-light: #a29bfe;
-      --accent-glow: rgba(108, 92, 231, 0.3);
-      --green: #00d2a0;
-      --red: #ff6b6b;
-      --gold: #ffd700;
-      --radius: 10px;
+      --bg: #f0ebe3;
+      --white: #ffffff;
+      --surface: #ffffff;
+      --border: #e2ddd5;
+      --text: #2d2a26;
+      --text-dim: #7a756d;
+      --purple: #6c5ce7;
+      --purple-light: #a29bfe;
+      --purple-bg: #ede9fe;
+      --green: #10b981;
+      --green-bg: #d1fae5;
+      --green-dark: #059669;
+      --orange: #f59e0b;
+      --orange-bg: #fef3c7;
+      --red: #ef4444;
+      --blue: #3b82f6;
+      --radius: 14px;
+      --radius-lg: 20px;
+      --shadow: 0 4px 20px rgba(0,0,0,0.08);
+      --shadow-lg: 0 8px 40px rgba(0,0,0,0.12);
     }
 
     body {
-      font-family: 'Inter', -apple-system, sans-serif;
+      font-family: 'Nunito', -apple-system, sans-serif;
       background: var(--bg);
       color: var(--text);
       height: 100vh;
@@ -44,69 +51,75 @@
       align-items: center;
       justify-content: center;
       text-align: center;
-      background: radial-gradient(ellipse at 50% 30%, rgba(108, 92, 231, 0.1) 0%, var(--bg) 70%);
+      background: linear-gradient(160deg, #ede9fe 0%, #f0ebe3 40%, #d1fae5 100%);
+      padding: 32px;
     }
 
-    .landing-title {
-      font-size: clamp(3rem, 8vw, 5.5rem);
+    .logo {
+      font-size: clamp(2.8rem, 7vw, 4.5rem);
       font-weight: 900;
-      letter-spacing: -2px;
-      line-height: 1;
-      margin-bottom: 12px;
-      background: linear-gradient(135deg, #fff 0%, #a29bfe 50%, #6c5ce7 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      color: var(--purple);
+      margin-bottom: 8px;
+      letter-spacing: -1px;
     }
 
-    .landing-sub { font-size: 1.1rem; color: var(--text-dim); margin-bottom: 48px; }
+    .logo span { color: var(--green); }
 
-    .landing-how {
+    .tagline { font-size: 1.1rem; color: var(--text-dim); margin-bottom: 40px; font-weight: 600; }
+
+    .steps {
       display: flex;
-      gap: 40px;
-      margin-bottom: 48px;
+      gap: 24px;
+      margin-bottom: 40px;
       flex-wrap: wrap;
       justify-content: center;
     }
 
-    .how-step {
+    .step {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 20px 16px;
+      width: 150px;
+      box-shadow: var(--shadow);
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 6px;
-      width: 140px;
+      gap: 8px;
     }
 
-    .how-num {
-      width: 36px;
-      height: 36px;
+    .step-icon {
+      width: 44px;
+      height: 44px;
       border-radius: 50%;
-      background: var(--accent);
-      color: #fff;
-      font-weight: 800;
-      font-size: 0.9rem;
       display: flex;
       align-items: center;
       justify-content: center;
+      font-size: 1.3rem;
+      font-weight: 800;
     }
 
-    .how-text { font-size: 0.8rem; color: var(--text-dim); line-height: 1.4; }
+    .step:nth-child(1) .step-icon { background: var(--purple-bg); color: var(--purple); }
+    .step:nth-child(2) .step-icon { background: var(--green-bg); color: var(--green); }
+    .step:nth-child(3) .step-icon { background: var(--orange-bg); color: var(--orange); }
+    .step:nth-child(4) .step-icon { background: #fce7f3; color: #ec4899; }
 
-    .btn {
-      padding: 16px 56px;
+    .step-text { font-size: 0.8rem; color: var(--text-dim); font-weight: 600; line-height: 1.3; }
+
+    .btn-play {
+      padding: 16px 64px;
       font-family: inherit;
-      font-size: 1.1rem;
-      font-weight: 700;
+      font-size: 1.15rem;
+      font-weight: 800;
       color: #fff;
-      background: var(--accent);
+      background: var(--green);
       border: none;
-      border-radius: var(--radius);
+      border-radius: 50px;
       cursor: pointer;
       transition: all 0.2s;
+      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
     }
 
-    .btn:hover { transform: translateY(-1px); box-shadow: 0 8px 30px var(--accent-glow); }
-    .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
-    .btn-sm { padding: 10px 24px; font-size: 0.9rem; }
+    .btn-play:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(16, 185, 129, 0.4); }
 
     /* ─── Loading ─── */
     #loading {
@@ -119,396 +132,446 @@
     }
 
     .spinner {
-      width: 64px;
-      height: 64px;
-      border: 3px solid var(--border);
-      border-top-color: var(--accent);
+      width: 56px;
+      height: 56px;
+      border: 4px solid var(--border);
+      border-top-color: var(--purple);
       border-radius: 50%;
-      animation: spin 0.9s linear infinite;
-      margin-bottom: 28px;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 24px;
     }
 
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    .load-title { font-size: 1.2rem; font-weight: 600; margin-bottom: 6px; }
-    .load-sub { color: var(--text-dim); font-size: 0.85rem; margin-bottom: 28px; }
+    .load-title { font-size: 1.15rem; font-weight: 800; margin-bottom: 4px; color: var(--text); }
+    .load-sub { color: var(--text-dim); font-size: 0.85rem; margin-bottom: 24px; font-weight: 600; }
 
-    .fact-box {
-      max-width: 440px;
+    .fact-card {
+      max-width: 420px;
       padding: 16px 20px;
-      background: var(--surface);
-      border: 1px solid var(--border);
+      background: var(--white);
       border-radius: var(--radius);
+      box-shadow: var(--shadow);
       font-size: 0.85rem;
       color: var(--text-dim);
+      font-weight: 600;
       line-height: 1.5;
       transition: opacity 0.3s;
     }
 
-    .fact-label { font-size: 0.65rem; font-weight: 700; letter-spacing: 1.5px; color: var(--accent-light); margin-bottom: 10px; text-transform: uppercase; }
-
-    /* ─── Playing (GeoGuessr-style) ─── */
-    #playing {
-      flex-direction: column;
-      position: relative;
-      background: #000;
+    .fact-tag {
+      display: inline-block;
+      font-size: 0.6rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      color: var(--purple);
+      background: var(--purple-bg);
+      padding: 3px 8px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      text-transform: uppercase;
     }
 
-    .play-hud {
+    .btn-retry {
+      padding: 10px 28px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #fff;
+      background: var(--purple);
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      margin-bottom: 16px;
+    }
+
+    /* ─── Playing ─── */
+    #playing { position: relative; background: #1a1a2e; }
+
+    .play-bar {
       position: absolute;
-      top: 0; left: 0; right: 0;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 16px;
-      background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 100%);
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
       z-index: 100;
-      pointer-events: none;
+      display: flex;
+      gap: 12px;
+      align-items: center;
     }
 
-    .play-hud > * { pointer-events: auto; }
+    .pill {
+      background: var(--white);
+      border-radius: 50px;
+      padding: 8px 18px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text);
+    }
 
-    .hud-round { font-size: 0.85rem; font-weight: 700; color: var(--accent-light); }
-    .hud-score { font-size: 0.85rem; font-weight: 700; color: var(--gold); }
+    .pill-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .pill-dot.purple { background: var(--purple); }
+    .pill-dot.gold { background: var(--orange); }
 
-    .video-full {
+    .video-bg { position: absolute; inset: 0; z-index: 1; }
+    .video-bg video { width: 100%; height: 100%; object-fit: cover; }
+
+    .control-tray {
       position: absolute;
-      inset: 0;
-      z-index: 1;
-    }
-
-    .video-full video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .guess-tray {
-      position: absolute;
-      bottom: 16px;
-      right: 16px;
+      bottom: 20px;
+      right: 20px;
       z-index: 200;
       display: flex;
       flex-direction: column;
-      align-items: flex-end;
-      gap: 10px;
-      transition: all 0.3s ease;
+      align-items: stretch;
+      width: 340px;
+      gap: 0;
     }
 
-    .map-wrap {
-      width: 320px;
-      height: 220px;
-      border-radius: var(--radius);
+    .mini-map-box {
+      height: 240px;
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
       overflow: hidden;
-      border: 2px solid rgba(255,255,255,0.15);
-      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
-      transition: all 0.3s ease;
       position: relative;
+      box-shadow: var(--shadow-lg);
+      transition: height 0.3s ease;
     }
 
-    .map-wrap.expanded {
-      width: 480px;
-      height: 360px;
-    }
+    .mini-map-box.big { height: 400px; }
 
-    .map-wrap #guessMap { width: 100%; height: 100%; }
+    .mini-map-box #guessMap { width: 100%; height: 100%; }
 
-    .map-expand-btn {
+    .expand-btn {
       position: absolute;
-      top: 6px;
-      left: 6px;
-      z-index: 500;
-      width: 28px;
-      height: 28px;
-      background: rgba(0,0,0,0.6);
-      border: 1px solid rgba(255,255,255,0.2);
-      border-radius: 4px;
-      color: #fff;
-      font-size: 1rem;
+      top: 8px;
+      left: 8px;
+      z-index: 600;
+      width: 30px;
+      height: 30px;
+      background: var(--white);
+      border: none;
+      border-radius: 8px;
       cursor: pointer;
+      font-size: 0.85rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      line-height: 1;
+      box-shadow: var(--shadow);
+      color: var(--text);
     }
 
-    .year-tray {
+    .bottom-bar {
+      background: var(--white);
+      border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .year-row {
       display: flex;
       align-items: center;
-      gap: 12px;
-      background: rgba(0,0,0,0.75);
-      backdrop-filter: blur(12px);
-      padding: 10px 16px;
-      border-radius: var(--radius);
-      border: 1px solid rgba(255,255,255,0.1);
-      min-width: 320px;
+      gap: 10px;
     }
 
-    .year-tray-label { font-size: 0.65rem; color: var(--text-dim); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+    .yr-label { font-size: 0.65rem; font-weight: 800; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
 
-    .year-tray input[type="range"] {
+    .yr-slider {
       flex: 1;
       -webkit-appearance: none;
       appearance: none;
-      height: 5px;
-      background: rgba(255,255,255,0.15);
+      height: 6px;
+      background: #e5e2dc;
       border-radius: 3px;
       outline: none;
       cursor: pointer;
     }
 
-    .year-tray input[type="range"]::-webkit-slider-thumb {
+    .yr-slider::-webkit-slider-thumb {
       -webkit-appearance: none;
-      width: 18px;
-      height: 18px;
+      width: 20px;
+      height: 20px;
       border-radius: 50%;
-      background: var(--accent);
+      background: var(--purple);
       cursor: pointer;
-      box-shadow: 0 0 8px var(--accent-glow);
+      box-shadow: 0 2px 8px rgba(108,92,231,0.4);
     }
 
-    .year-tray input[type="range"]::-moz-range-thumb {
-      width: 18px;
-      height: 18px;
+    .yr-slider::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
       border-radius: 50%;
-      background: var(--accent);
+      background: var(--purple);
       cursor: pointer;
       border: none;
     }
 
-    .year-display {
-      font-size: 1.05rem;
-      font-weight: 800;
-      color: #fff;
-      min-width: 100px;
+    .yr-val {
+      font-size: 1rem;
+      font-weight: 900;
+      color: var(--purple);
+      min-width: 90px;
       text-align: right;
-      white-space: nowrap;
+    }
+
+    .yr-ticks {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.55rem;
+      color: #b5b0a8;
+      font-weight: 700;
+      margin-top: -4px;
+      padding: 0 2px;
     }
 
     .btn-guess {
-      padding: 12px 32px;
+      width: 100%;
+      padding: 12px;
       font-family: inherit;
-      font-size: 0.95rem;
-      font-weight: 700;
+      font-size: 1rem;
+      font-weight: 800;
       color: #fff;
       background: var(--green);
       border: none;
-      border-radius: var(--radius);
+      border-radius: 50px;
       cursor: pointer;
       transition: all 0.2s;
-      white-space: nowrap;
     }
 
-    .btn-guess:hover:not(:disabled) { box-shadow: 0 4px 20px rgba(0, 210, 160, 0.4); }
-    .btn-guess:disabled { opacity: 0.35; cursor: not-allowed; background: #666; }
+    .btn-guess:hover:not(:disabled) { box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4); transform: translateY(-1px); }
+    .btn-guess:disabled { opacity: 0.4; cursor: not-allowed; }
 
     /* ─── Result ─── */
     #result { flex-direction: column; background: var(--bg); }
 
-    .result-top {
+    .res-header {
       text-align: center;
-      padding: 16px 24px;
-      background: var(--surface);
+      padding: 14px 20px;
+      background: var(--white);
       border-bottom: 1px solid var(--border);
     }
 
-    .result-event { font-size: 1.2rem; font-weight: 700; }
-    .result-place { font-size: 0.85rem; color: var(--text-dim); margin-top: 2px; }
+    .res-event { font-size: 1.15rem; font-weight: 800; color: var(--text); }
+    .res-where { font-size: 0.8rem; color: var(--text-dim); font-weight: 600; margin-top: 2px; }
 
-    .result-mid { display: flex; flex: 1; overflow: hidden; }
+    .res-body { display: flex; flex: 1; overflow: hidden; }
 
     #resultMap { flex: 1; }
 
-    .result-panel {
+    .res-panel {
       width: 340px;
       padding: 20px;
-      background: var(--surface);
+      background: var(--white);
       border-left: 1px solid var(--border);
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 14px;
       overflow-y: auto;
     }
 
-    .score-big { text-align: center; padding: 16px; background: var(--bg); border-radius: var(--radius); border: 1px solid var(--border); }
-    .score-big-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); margin-bottom: 4px; }
-    .score-big-val { font-size: 2rem; font-weight: 900; color: var(--gold); }
+    .score-hero {
+      text-align: center;
+      padding: 18px;
+      background: linear-gradient(135deg, var(--purple-bg) 0%, #fef3c7 100%);
+      border-radius: var(--radius);
+    }
 
-    .stat-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 0.82rem; }
-    .stat-row:last-child { border-bottom: none; }
-    .stat-label { color: var(--text-dim); }
-    .stat-val { font-weight: 600; }
-    .stat-val.green { color: var(--green); }
-    .stat-val.purple { color: var(--accent-light); }
-    .stat-val.gold { color: var(--gold); }
+    .score-hero-label { font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); margin-bottom: 2px; }
+    .score-hero-val { font-size: 2.2rem; font-weight: 900; color: var(--purple); }
+
+    .stats { display: flex; flex-direction: column; gap: 0; }
+
+    .s-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 9px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8rem;
+    }
+
+    .s-row:last-child { border-bottom: none; }
+    .s-k { color: var(--text-dim); font-weight: 600; }
+    .s-v { font-weight: 800; }
+    .s-v.green { color: var(--green); }
+    .s-v.purple { color: var(--purple); }
+    .s-v.orange { color: var(--orange); }
 
     .btn-next {
       margin-top: auto;
-      padding: 14px;
+      padding: 12px;
       font-family: inherit;
       font-size: 0.95rem;
-      font-weight: 700;
+      font-weight: 800;
       color: #fff;
-      background: var(--accent);
+      background: var(--green);
       border: none;
-      border-radius: var(--radius);
+      border-radius: 50px;
       cursor: pointer;
       transition: all 0.2s;
     }
 
-    .btn-next:hover { box-shadow: 0 6px 24px var(--accent-glow); }
+    .btn-next:hover { box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4); }
 
     /* ─── Final ─── */
     #final {
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 40px 24px;
-      background: var(--bg);
+      padding: 32px 24px;
+      background: linear-gradient(160deg, #ede9fe 0%, #f0ebe3 40%, #fef3c7 100%);
       overflow-y: auto;
     }
 
-    .final-label { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--accent-light); margin-bottom: 8px; }
-    .final-score { font-size: clamp(3rem, 8vw, 5rem); font-weight: 900; color: var(--gold); margin-bottom: 2px; }
-    .final-max { font-size: 0.95rem; color: var(--text-dim); margin-bottom: 32px; }
+    .fin-tag { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: var(--purple); margin-bottom: 4px; }
+    .fin-score { font-size: clamp(2.5rem, 7vw, 4.5rem); font-weight: 900; color: var(--text); margin-bottom: 2px; }
+    .fin-max { font-size: 0.9rem; color: var(--text-dim); font-weight: 600; margin-bottom: 28px; }
 
-    .final-list { width: 100%; max-width: 580px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 32px; }
+    .fin-list { width: 100%; max-width: 520px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 28px; }
 
-    .fl-row {
+    .fin-row {
       display: flex;
       align-items: center;
-      gap: 14px;
-      padding: 12px 16px;
-      background: var(--surface);
-      border: 1px solid var(--border);
+      gap: 12px;
+      padding: 12px 14px;
+      background: var(--white);
       border-radius: var(--radius);
+      box-shadow: var(--shadow);
     }
 
-    .fl-num { font-size: 0.75rem; font-weight: 800; color: var(--accent-light); width: 24px; text-align: center; }
-    .fl-info { flex: 1; }
-    .fl-name { font-size: 0.85rem; font-weight: 600; }
-    .fl-loc { font-size: 0.7rem; color: var(--text-dim); }
-    .fl-pts { font-size: 0.95rem; font-weight: 800; color: var(--gold); min-width: 70px; text-align: right; }
+    .fin-n {
+      width: 28px; height: 28px;
+      background: var(--purple-bg);
+      color: var(--purple);
+      border-radius: 50%;
+      font-size: 0.75rem;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-    /* ─── Leaflet ─── */
-    .leaflet-container { background: #e8e0d8; }
+    .fin-info { flex: 1; }
+    .fin-name { font-size: 0.82rem; font-weight: 700; }
+    .fin-loc { font-size: 0.68rem; color: var(--text-dim); font-weight: 600; }
+    .fin-pts { font-size: 0.95rem; font-weight: 900; color: var(--green); }
+
+    .leaflet-container { background: #f2efe9; }
     .leaflet-control-attribution { display: none !important; }
 
     @media (max-width: 700px) {
-      .map-wrap { width: 240px; height: 160px; }
-      .map-wrap.expanded { width: 100vw; height: 50vh; border-radius: 0; position: fixed; bottom: 0; right: 0; }
-      .year-tray { min-width: 240px; }
-      .result-mid { flex-direction: column; }
-      .result-panel { width: 100%; border-left: none; border-top: 1px solid var(--border); }
+      .control-tray { width: 280px; right: 10px; bottom: 10px; }
+      .mini-map-box { height: 180px; }
+      .mini-map-box.big { height: 300px; }
+      .res-body { flex-direction: column; }
+      .res-panel { width: 100%; border-left: none; border-top: 1px solid var(--border); }
     }
   </style>
 </head>
 <body>
 
-  <!-- Landing -->
   <div id="landing" class="screen active">
-    <h1 class="landing-title">HistoryGuessr</h1>
-    <p class="landing-sub">Watch AI-generated history. Guess when and where.</p>
-    <div class="landing-how">
-      <div class="how-step"><div class="how-num">1</div><div class="how-text">Watch a scene from history</div></div>
-      <div class="how-step"><div class="how-num">2</div><div class="how-text">Place a pin on the map</div></div>
-      <div class="how-step"><div class="how-num">3</div><div class="how-text">Pick the year</div></div>
-      <div class="how-step"><div class="how-num">4</div><div class="how-text">Score points!</div></div>
+    <h1 class="logo">History<span>Guessr</span></h1>
+    <p class="tagline">Watch AI history. Guess when &amp; where.</p>
+    <div class="steps">
+      <div class="step"><div class="step-icon">&#127916;</div><div class="step-text">Watch a scene from history</div></div>
+      <div class="step"><div class="step-icon">&#128205;</div><div class="step-text">Drop a pin on the map</div></div>
+      <div class="step"><div class="step-icon">&#128197;</div><div class="step-text">Pick the year</div></div>
+      <div class="step"><div class="step-icon">&#127942;</div><div class="step-text">Score points!</div></div>
     </div>
-    <button class="btn" onclick="startGame()">Play</button>
+    <button class="btn-play" onclick="startGame()">Play Now</button>
   </div>
 
-  <!-- Loading -->
   <div id="loading" class="screen">
     <div class="spinner" id="loadingSpinner"></div>
     <div class="load-title" id="loadTitle">Generating your scene...</div>
-    <div class="load-sub" id="loadSub">This takes about 30-60 seconds</div>
-    <button class="btn btn-sm" id="retryBtn" style="display:none;margin-bottom:20px" onclick="retryVideo()">Retry</button>
-    <div class="fact-label">DID YOU KNOW?</div>
-    <div class="fact-box" id="funFact"></div>
+    <div class="load-sub" id="loadSub">About 30 &ndash; 60 seconds</div>
+    <button class="btn-retry" id="retryBtn" style="display:none" onclick="retryVideo()">Try Again</button>
+    <div class="fact-tag">Did you know?</div>
+    <div class="fact-card" id="funFact"></div>
   </div>
 
-  <!-- Playing -->
   <div id="playing" class="screen">
-    <div class="play-hud">
-      <span class="hud-round" id="hudRound">Round 1 / 5</span>
-      <span class="hud-score" id="hudScore">0 pts</span>
+    <div class="play-bar">
+      <div class="pill"><div class="pill-dot purple"></div><span id="hudRound">Round 1 / 5</span></div>
+      <div class="pill"><div class="pill-dot gold"></div><span id="hudScore">0 pts</span></div>
     </div>
-    <div class="video-full">
-      <video id="gameVideo" autoplay loop muted playsinline></video>
-    </div>
-    <div class="guess-tray">
-      <div class="map-wrap" id="mapWrap">
-        <button class="map-expand-btn" id="mapExpandBtn" onclick="toggleMapSize()">&#x26F6;</button>
+    <div class="video-bg"><video id="gameVideo" autoplay loop muted playsinline></video></div>
+    <div class="control-tray">
+      <div class="mini-map-box" id="mapBox">
+        <button class="expand-btn" id="expandBtn" onclick="toggleMap()">&#x2922;</button>
         <div id="guessMap"></div>
       </div>
-      <div class="year-tray">
-        <span class="year-tray-label">Year</span>
-        <input type="range" id="yearSlider" min="-3000" max="2025" value="1000" step="1">
-        <span class="year-display" id="yearDisplay">1000 AD</span>
+      <div class="bottom-bar">
+        <div class="year-row">
+          <span class="yr-label">Year</span>
+          <input class="yr-slider" type="range" id="yearSlider" min="-3000" max="2025" value="1000" step="1">
+          <span class="yr-val" id="yearDisplay">1000 AD</span>
+        </div>
+        <div class="yr-ticks"><span>3000 BC</span><span>1000 BC</span><span>1 AD</span><span>1000</span><span>2025</span></div>
+        <button class="btn-guess" id="guessBtn" disabled onclick="submitGuess()">Place a pin to guess</button>
       </div>
-      <button class="btn-guess" id="guessBtn" disabled onclick="submitGuess()">Guess</button>
     </div>
   </div>
 
-  <!-- Result -->
   <div id="result" class="screen">
-    <div class="result-top">
-      <div class="result-event" id="resEvent"></div>
-      <div class="result-place" id="resPlace"></div>
+    <div class="res-header">
+      <div class="res-event" id="resEvent"></div>
+      <div class="res-where" id="resPlace"></div>
     </div>
-    <div class="result-mid">
+    <div class="res-body">
       <div id="resultMap"></div>
-      <div class="result-panel">
-        <div class="score-big">
-          <div class="score-big-label">Round Score</div>
-          <div class="score-big-val" id="resScore">0</div>
+      <div class="res-panel">
+        <div class="score-hero">
+          <div class="score-hero-label">Round Score</div>
+          <div class="score-hero-val" id="resScore">0</div>
         </div>
-        <div>
-          <div class="stat-row"><span class="stat-label">Location</span><span class="stat-val green" id="resLocScore">0 / 5,000</span></div>
-          <div class="stat-row"><span class="stat-label">Distance</span><span class="stat-val" id="resDist">0 km</span></div>
-          <div class="stat-row"><span class="stat-label">Time</span><span class="stat-val purple" id="resTimeScore">0 / 5,000</span></div>
-          <div class="stat-row"><span class="stat-label">Year off by</span><span class="stat-val" id="resYearDiff">0 years</span></div>
-          <div class="stat-row"><span class="stat-label">You guessed</span><span class="stat-val" id="resGuessYear">-</span></div>
-          <div class="stat-row"><span class="stat-label">Answer</span><span class="stat-val" id="resCorrectYear">-</span></div>
-          <div class="stat-row" style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px">
-            <span class="stat-label">Game Total</span><span class="stat-val gold" id="resGameTotal">0</span>
-          </div>
+        <div class="stats">
+          <div class="s-row"><span class="s-k">Location</span><span class="s-v green" id="resLocScore">0 / 5,000</span></div>
+          <div class="s-row"><span class="s-k">Distance</span><span class="s-v" id="resDist">0 km</span></div>
+          <div class="s-row"><span class="s-k">Time</span><span class="s-v purple" id="resTimeScore">0 / 5,000</span></div>
+          <div class="s-row"><span class="s-k">Off by</span><span class="s-v" id="resYearDiff">0 years</span></div>
+          <div class="s-row"><span class="s-k">You said</span><span class="s-v" id="resGuessYear">-</span></div>
+          <div class="s-row"><span class="s-k">Answer</span><span class="s-v" id="resCorrectYear">-</span></div>
+          <div class="s-row" style="border-top:2px solid var(--border);padding-top:10px;margin-top:2px"><span class="s-k">Game Total</span><span class="s-v orange" id="resGameTotal">0</span></div>
         </div>
         <button class="btn-next" id="nextBtn" onclick="nextRound()">Next Round</button>
       </div>
     </div>
   </div>
 
-  <!-- Final -->
   <div id="final" class="screen">
-    <div class="final-label">Game Over</div>
-    <div class="final-score" id="finalScore">0</div>
-    <div class="final-max">out of 50,000</div>
-    <div class="final-list" id="finalList"></div>
-    <button class="btn" onclick="startGame()">Play Again</button>
+    <div class="fin-tag">Game Over</div>
+    <div class="fin-score" id="finalScore">0</div>
+    <div class="fin-max">out of 50,000</div>
+    <div class="fin-list" id="finalList"></div>
+    <button class="btn-play" onclick="startGame()">Play Again</button>
   </div>
 
   <script>
-    let gameId = null, currentRound = 0, totalScore = 0;
-    let guessMap = null, guessMarker = null, resultMap = null;
-    let yearTouched = false, mapExpanded = false;
+    let gameId, currentRound = 0, totalScore = 0;
+    let guessMap, guessMarker, resultMap;
+    let yearTouched = false, mapBig = false;
 
     const FACTS = [
       "The Great Pyramid was the tallest structure on Earth for 3,800 years.",
-      "Cleopatra lived closer to the Moon landing than to the Pyramids' construction.",
+      "Cleopatra lived closer to the Moon landing than to the Pyramids.",
       "Oxford University is older than the Aztec Empire.",
       "The shortest war ever lasted 38 minutes (Britain vs Zanzibar, 1896).",
-      "Napoleon was actually average height \u2014 British propaganda made him seem short.",
-      "In 1932, Australia lost a war against emus.",
-      "Genghis Khan killed so many people it actually cooled the climate.",
-      "Woolly mammoths were still alive when the Pyramids were being built.",
-      "The Great Wall of China is NOT visible from space with the naked eye.",
-      "In medieval Europe, animals were put on trial and given lawyers.",
+      "Napoleon was average height \u2014 the short thing was British propaganda.",
+      "In 1932, Australia lost a war against emus. Seriously.",
+      "Genghis Khan killed so many people it cooled the climate.",
+      "Woolly mammoths were alive when the Pyramids were being built.",
+      "The Great Wall of China is NOT visible from space.",
+      "In medieval Europe, animals were put on trial with lawyers.",
       "Abraham Lincoln is in the Wrestling Hall of Fame.",
-      "Ancient Romans used urine as mouthwash.",
       "Vikings gave kittens to new brides as wedding gifts.",
-      "The Library of Alexandria declined over centuries, not in one fire."
+      "The Library of Alexandria declined over centuries, not one fire."
     ];
 
     function show(id) {
@@ -517,33 +580,30 @@
     }
 
     function fmtYear(y) {
-      if (y < 0) return `${Math.abs(y)} BC`;
+      if (y < 0) return Math.abs(y) + ' BC';
       if (y === 0) return '1 BC';
-      return `${y} AD`;
+      return y + ' AD';
     }
 
-    let factTimer = null;
+    let factTimer;
     function startFacts() {
       const el = document.getElementById('funFact');
       let i = Math.floor(Math.random() * FACTS.length);
-      el.textContent = FACTS[i];
-      el.style.opacity = 1;
+      el.textContent = FACTS[i]; el.style.opacity = 1;
       factTimer = setInterval(() => {
         i = (i + 1) % FACTS.length;
         el.style.opacity = 0;
-        setTimeout(() => { el.textContent = FACTS[i]; el.style.opacity = 1; }, 300);
+        setTimeout(() => { el.textContent = FACTS[i]; el.style.opacity = 1; }, 250);
       }, 5000);
     }
-    function stopFacts() { if (factTimer) clearInterval(factTimer); factTimer = null; }
+    function stopFacts() { clearInterval(factTimer); }
 
-    function toggleMapSize() {
-      mapExpanded = !mapExpanded;
-      document.getElementById('mapWrap').classList.toggle('expanded', mapExpanded);
-      document.getElementById('mapExpandBtn').textContent = mapExpanded ? '\u2716' : '\u26F6';
+    function toggleMap() {
+      mapBig = !mapBig;
+      document.getElementById('mapBox').classList.toggle('big', mapBig);
+      document.getElementById('expandBtn').textContent = mapBig ? '\u2716' : '\u2922';
       setTimeout(() => { if (guessMap) guessMap.invalidateSize(); }, 350);
     }
-
-    // ─── Game Flow ───
 
     let pendingRound = 0;
 
@@ -552,22 +612,21 @@
       show('loading');
       document.getElementById('loadingSpinner').style.display = 'block';
       document.getElementById('loadTitle').textContent = 'Generating your scene...';
-      document.getElementById('loadSub').textContent = 'This takes about 30\u201360 seconds';
+      document.getElementById('loadSub').textContent = 'About 30 \u2013 60 seconds';
       document.getElementById('retryBtn').style.display = 'none';
       startFacts();
       try {
         const r = await fetch('/api/game/new', { method: 'POST' });
         const d = await r.json();
-        gameId = d.gameId;
-        pendingRound = 0;
+        gameId = d.gameId; pendingRound = 0;
         await pollVideo(0);
-      } catch (e) { stopFacts(); showFail(); }
+      } catch { stopFacts(); showFail(); }
     }
 
     function showFail() {
       document.getElementById('loadingSpinner').style.display = 'none';
       document.getElementById('loadTitle').textContent = 'Generation failed';
-      document.getElementById('loadSub').textContent = 'The AI service may be busy. Try again.';
+      document.getElementById('loadSub').textContent = 'AI might be busy. Give it another shot!';
       document.getElementById('retryBtn').style.display = 'inline-block';
     }
 
@@ -594,21 +653,18 @@
     }
 
     function showPlaying(rn, url) {
-      currentRound = rn;
-      yearTouched = false;
+      currentRound = rn; yearTouched = false;
       document.getElementById('hudRound').textContent = `Round ${rn + 1} / 5`;
-      document.getElementById('hudScore').textContent = `${totalScore.toLocaleString()} pts`;
-      const vid = document.getElementById('gameVideo');
-      vid.src = url;
-      vid.play().catch(() => {});
+      document.getElementById('hudScore').textContent = totalScore.toLocaleString() + ' pts';
+      const v = document.getElementById('gameVideo');
+      v.src = url; v.play().catch(() => {});
       document.getElementById('yearSlider').value = 1000;
       document.getElementById('yearDisplay').textContent = '1000 AD';
       const btn = document.getElementById('guessBtn');
-      btn.disabled = true;
-      btn.textContent = 'Guess';
-      mapExpanded = false;
-      document.getElementById('mapWrap').classList.remove('expanded');
-      document.getElementById('mapExpandBtn').textContent = '\u26F6';
+      btn.disabled = true; btn.textContent = 'Place a pin to guess';
+      mapBig = false;
+      document.getElementById('mapBox').classList.remove('big');
+      document.getElementById('expandBtn').textContent = '\u2922';
       show('playing');
 
       setTimeout(() => {
@@ -633,33 +689,33 @@
         guessMarker = L.marker(e.latlng, {
           icon: L.divIcon({
             className: '',
-            html: '<div style="width:22px;height:22px;background:#6c5ce7;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.5);transform:translate(-11px,-11px)"></div>',
+            html: '<div style="width:24px;height:24px;background:#6c5ce7;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 10px rgba(0,0,0,0.3);transform:translate(-12px,-12px)"></div>',
             iconSize: [0, 0]
           })
         }).addTo(guessMap);
       }
-      updateGuessBtn();
+      updateBtn();
     }
 
     document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('yearSlider').addEventListener('input', function () {
         yearTouched = true;
         document.getElementById('yearDisplay').textContent = fmtYear(parseInt(this.value));
-        updateGuessBtn();
+        updateBtn();
       });
     });
 
-    function updateGuessBtn() {
+    function updateBtn() {
       const ok = guessMarker && yearTouched;
-      const btn = document.getElementById('guessBtn');
-      btn.disabled = !ok;
-      btn.textContent = ok ? 'Guess' : (!guessMarker ? 'Place pin first' : 'Pick a year');
+      const b = document.getElementById('guessBtn');
+      b.disabled = !ok;
+      b.textContent = ok ? 'Guess!' : (!guessMarker ? 'Place a pin to guess' : 'Now pick a year');
     }
 
     async function submitGuess() {
       if (!guessMarker || !yearTouched) return;
-      const btn = document.getElementById('guessBtn');
-      btn.disabled = true; btn.textContent = '...';
+      const b = document.getElementById('guessBtn');
+      b.disabled = true; b.textContent = '...';
       const ll = guessMarker.getLatLng();
       const yr = parseInt(document.getElementById('yearSlider').value);
       try {
@@ -670,19 +726,17 @@
         const d = await r.json();
         totalScore = d.gameTotalScore;
         showResult(d, ll.lat, ll.lng, yr);
-      } catch (e) {
-        btn.disabled = false; btn.textContent = 'Guess';
-      }
+      } catch { b.disabled = false; b.textContent = 'Guess!'; }
     }
 
     function showResult(d, gLat, gLng, gYear) {
       document.getElementById('resEvent').textContent = d.correctEventName;
-      document.getElementById('resPlace').textContent = `${d.correctLocationName} \u2014 ${fmtYear(d.correctYear)}`;
+      document.getElementById('resPlace').textContent = d.correctLocationName + ' \u2014 ' + fmtYear(d.correctYear);
       document.getElementById('resScore').textContent = d.totalScore.toLocaleString();
-      document.getElementById('resLocScore').textContent = `${d.locationScore.toLocaleString()} / 5,000`;
-      document.getElementById('resDist').textContent = `${d.distanceKm.toLocaleString()} km`;
-      document.getElementById('resTimeScore').textContent = `${d.timeScore.toLocaleString()} / 5,000`;
-      document.getElementById('resYearDiff').textContent = `${d.yearDiff.toLocaleString()} years`;
+      document.getElementById('resLocScore').textContent = d.locationScore.toLocaleString() + ' / 5,000';
+      document.getElementById('resDist').textContent = d.distanceKm.toLocaleString() + ' km';
+      document.getElementById('resTimeScore').textContent = d.timeScore.toLocaleString() + ' / 5,000';
+      document.getElementById('resYearDiff').textContent = d.yearDiff.toLocaleString() + ' years';
       document.getElementById('resGuessYear').textContent = fmtYear(gYear);
       document.getElementById('resCorrectYear').textContent = fmtYear(d.correctYear);
       document.getElementById('resGameTotal').textContent = d.gameTotalScore.toLocaleString();
@@ -691,17 +745,14 @@
 
       if (resultMap) { resultMap.remove(); resultMap = null; }
       resultMap = L.map('resultMap', { center: [0, 0], zoom: 2, worldCopyJump: true, zoomControl: false });
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-        subdomains: 'abcd', maxZoom: 20
-      }).addTo(resultMap);
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { subdomains: 'abcd', maxZoom: 20 }).addTo(resultMap);
 
-      const gIcon = L.divIcon({ className: '', html: '<div style="width:18px;height:18px;background:#6c5ce7;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.5);transform:translate(-9px,-9px)"></div>', iconSize: [0, 0] });
-      const cIcon = L.divIcon({ className: '', html: '<div style="width:18px;height:18px;background:#00d2a0;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.5);transform:translate(-9px,-9px)"></div>', iconSize: [0, 0] });
+      const gi = L.divIcon({ className: '', html: '<div style="width:20px;height:20px;background:#6c5ce7;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.3);transform:translate(-10px,-10px)"></div>', iconSize: [0, 0] });
+      const ci = L.divIcon({ className: '', html: '<div style="width:20px;height:20px;background:#10b981;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.3);transform:translate(-10px,-10px)"></div>', iconSize: [0, 0] });
 
-      L.marker([gLat, gLng], { icon: gIcon }).addTo(resultMap).bindPopup(`<b>Your Guess</b><br>${fmtYear(gYear)}`);
-      L.marker([d.correctLat, d.correctLng], { icon: cIcon }).addTo(resultMap).bindPopup(`<b>${d.correctEventName}</b><br>${d.correctLocationName}<br>${fmtYear(d.correctYear)}`);
-      L.polyline([[gLat, gLng], [d.correctLat, d.correctLng]], { color: '#ff6b6b', weight: 2, dashArray: '8,8', opacity: 0.8 }).addTo(resultMap);
-
+      L.marker([gLat, gLng], { icon: gi }).addTo(resultMap).bindPopup('<b>Your Guess</b><br>' + fmtYear(gYear));
+      L.marker([d.correctLat, d.correctLng], { icon: ci }).addTo(resultMap).bindPopup('<b>' + d.correctEventName + '</b><br>' + d.correctLocationName);
+      L.polyline([[gLat, gLng], [d.correctLat, d.correctLng]], { color: '#ef4444', weight: 2.5, dashArray: '8,6', opacity: 0.8 }).addTo(resultMap);
       resultMap.fitBounds([[gLat, gLng], [d.correctLat, d.correctLng]], { padding: [50, 50], maxZoom: 8 });
       setTimeout(() => resultMap.invalidateSize(), 100);
     }
@@ -711,8 +762,8 @@
       const nr = currentRound + 1;
       show('loading');
       document.getElementById('loadingSpinner').style.display = 'block';
-      document.getElementById('loadTitle').textContent = `Generating Round ${nr + 1}...`;
-      document.getElementById('loadSub').textContent = 'Hang tight';
+      document.getElementById('loadTitle').textContent = 'Generating Round ' + (nr + 1) + '...';
+      document.getElementById('loadSub').textContent = 'Hang tight!';
       document.getElementById('retryBtn').style.display = 'none';
       startFacts();
       await pollVideo(nr);
@@ -723,12 +774,10 @@
         const r = await fetch(`/api/game/${gameId}/results`);
         const d = await r.json();
         document.getElementById('finalScore').textContent = d.totalScore.toLocaleString();
-        const el = document.getElementById('finalList');
-        el.innerHTML = '';
+        const el = document.getElementById('finalList'); el.innerHTML = '';
         d.rounds.forEach((r, i) => {
-          const row = document.createElement('div');
-          row.className = 'fl-row';
-          row.innerHTML = `<div class="fl-num">${i + 1}</div><div class="fl-info"><div class="fl-name">${r.eventName || '?'}</div><div class="fl-loc">${r.locationName || ''} \u2014 ${fmtYear(r.correctYear)}</div></div><div class="fl-pts">${r.score ? r.score.totalScore.toLocaleString() : '0'}</div>`;
+          const row = document.createElement('div'); row.className = 'fin-row';
+          row.innerHTML = '<div class="fin-n">' + (i + 1) + '</div><div class="fin-info"><div class="fin-name">' + (r.eventName || '?') + '</div><div class="fin-loc">' + (r.locationName || '') + ' \u2014 ' + fmtYear(r.correctYear) + '</div></div><div class="fin-pts">' + (r.score ? r.score.totalScore.toLocaleString() : '0') + '</div>';
           el.appendChild(row);
         });
       } catch {}
