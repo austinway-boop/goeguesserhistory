@@ -4,169 +4,38 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HistoryGuessr</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/globe.gl@2.35.1/dist/globe.gl.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    body {
-      font-family: 'DM Sans', system-ui, sans-serif;
-      background: #faf9f7;
-      color: #1a1a1a;
-      height: 100vh;
-      overflow: hidden;
-    }
+    body { font-family: 'DM Sans', system-ui, sans-serif; background: #faf9f7; color: #1a1a1a; height: 100vh; overflow: hidden; }
 
     .screen { display: none; height: 100vh; width: 100vw; position: absolute; inset: 0; }
     .screen.active { display: flex; }
 
-    /* ─── Landing ─── */
-    #landing {
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      background: #faf9f7;
-      padding: 32px;
-    }
-
-    .brand {
-      font-size: clamp(2.4rem, 6vw, 3.6rem);
-      font-weight: 700;
-      color: #1a1a1a;
-      margin-bottom: 10px;
-      letter-spacing: -0.5px;
-    }
-
-    .tagline {
-      font-size: 1.05rem;
-      color: #777;
-      margin-bottom: 44px;
-      max-width: 380px;
-      line-height: 1.5;
-    }
-
-    .how {
-      display: flex;
-      gap: 32px;
-      margin-bottom: 44px;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-
-    .how-item {
-      width: 120px;
-      text-align: center;
-    }
-
-    .how-n {
-      width: 32px;
-      height: 32px;
-      border: 2px solid #ddd;
-      border-radius: 50%;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.8rem;
-      font-weight: 700;
-      color: #555;
-      margin-bottom: 8px;
-    }
-
+    #landing { flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 32px; }
+    .brand { font-size: clamp(2.4rem, 6vw, 3.6rem); font-weight: 700; letter-spacing: -0.5px; margin-bottom: 10px; }
+    .tagline { font-size: 1.05rem; color: #777; margin-bottom: 44px; max-width: 380px; line-height: 1.5; }
+    .how { display: flex; gap: 32px; margin-bottom: 44px; flex-wrap: wrap; justify-content: center; }
+    .how-item { width: 120px; text-align: center; }
+    .how-n { width: 32px; height: 32px; border: 2px solid #ddd; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; color: #555; margin-bottom: 8px; }
     .how-t { font-size: 0.78rem; color: #888; line-height: 1.4; }
+    .btn { padding: 14px 52px; font-family: inherit; font-size: 1rem; font-weight: 700; color: #fff; background: #1a1a1a; border: none; border-radius: 8px; cursor: pointer; }
+    .btn:hover { background: #333; }
 
-    .btn-go {
-      padding: 14px 52px;
-      font-family: inherit;
-      font-size: 1rem;
-      font-weight: 700;
-      color: #fff;
-      background: #1a1a1a;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background 0.15s;
-    }
-
-    .btn-go:hover { background: #333; }
-
-    /* ─── Loading ─── */
-    #loading {
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 40px 24px;
-      background: #faf9f7;
-    }
-
-    .spinner {
-      width: 40px;
-      height: 40px;
-      border: 3px solid #e5e5e5;
-      border-top-color: #1a1a1a;
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-      margin-bottom: 20px;
-    }
-
+    #loading { flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px 24px; }
+    .spinner { width: 40px; height: 40px; border: 3px solid #e5e5e5; border-top-color: #1a1a1a; border-radius: 50%; animation: spin 0.7s linear infinite; margin-bottom: 20px; }
     @keyframes spin { to { transform: rotate(360deg); } }
-
     .load-title { font-size: 1rem; font-weight: 600; margin-bottom: 4px; }
     .load-sub { color: #999; font-size: 0.82rem; margin-bottom: 24px; }
-
-    .fact-card {
-      max-width: 400px;
-      padding: 14px 18px;
-      background: #fff;
-      border: 1px solid #eee;
-      border-radius: 8px;
-      font-size: 0.82rem;
-      color: #666;
-      line-height: 1.5;
-      transition: opacity 0.3s;
-    }
-
+    .fact-card { max-width: 400px; padding: 14px 18px; background: #fff; border: 1px solid #eee; border-radius: 8px; font-size: 0.82rem; color: #666; line-height: 1.5; transition: opacity 0.3s; }
     .fact-label { font-size: 0.6rem; font-weight: 700; letter-spacing: 1px; color: #aaa; margin-bottom: 8px; text-transform: uppercase; }
+    .btn-retry { padding: 8px 24px; font-family: inherit; font-size: 0.85rem; font-weight: 600; color: #fff; background: #1a1a1a; border: none; border-radius: 6px; cursor: pointer; margin-bottom: 16px; }
 
-    .btn-retry {
-      padding: 8px 24px;
-      font-family: inherit;
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: #fff;
-      background: #1a1a1a;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      margin-bottom: 16px;
-    }
-
-    /* ─── Playing ─── */
     #playing { position: relative; background: #111; }
-
-    .hud {
-      position: absolute;
-      top: 14px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 100;
-      display: flex;
-      gap: 8px;
-    }
-
-    .hud-chip {
-      background: #fff;
-      border-radius: 6px;
-      padding: 6px 14px;
-      font-size: 0.78rem;
-      font-weight: 700;
-      color: #1a1a1a;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.15);
-    }
-
+    .hud { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); z-index: 100; display: flex; gap: 8px; }
+    .hud-chip { background: #fff; border-radius: 6px; padding: 6px 14px; font-size: 0.78rem; font-weight: 700; box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
     .video-bg { position: absolute; inset: 0; z-index: 1; }
     .video-bg video { width: 100%; height: 100%; object-fit: cover; }
 
@@ -175,210 +44,90 @@
       bottom: 16px;
       right: 16px;
       z-index: 200;
-      width: 340px;
       display: flex;
       flex-direction: column;
       border-radius: 10px;
+      overflow: visible;
+      width: 280px;
+      transition: width 0.3s ease;
+    }
+
+    .tray:hover, .tray.pinned { width: 420px; }
+    .tray:hover .globe-box, .tray.pinned .globe-box { height: 340px; }
+
+    .globe-box {
+      height: 200px;
+      border-radius: 10px 10px 0 0;
       overflow: hidden;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.25);
-    }
-
-    .map-box {
-      height: 220px;
       position: relative;
-      transition: height 0.25s ease;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+      transition: height 0.3s ease;
+      background: #0a0a14;
+      cursor: grab;
     }
 
-    .map-box.big { height: 380px; }
+    .globe-box:active { cursor: grabbing; }
 
-    .map-box #guessMap { width: 100%; height: 100%; }
-
-    .expand-btn {
-      position: absolute;
-      top: 6px;
-      left: 6px;
-      z-index: 600;
-      width: 26px;
-      height: 26px;
-      background: #fff;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 0.75rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.15);
-      color: #333;
+    .pin-btn {
+      position: absolute; top: 6px; right: 6px; z-index: 600;
+      width: 26px; height: 26px; background: rgba(255,255,255,0.9); border: none; border-radius: 4px;
+      cursor: pointer; font-size: 0.7rem; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2); color: #333;
     }
 
     .controls {
       background: #fff;
+      border-radius: 0 0 10px 10px;
       padding: 12px 14px;
       display: flex;
       flex-direction: column;
       gap: 10px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.2);
     }
 
     .yr-row { display: flex; align-items: center; gap: 8px; }
-
     .yr-lbl { font-size: 0.62rem; font-weight: 700; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px; }
-
-    .yr-slider {
-      flex: 1;
-      -webkit-appearance: none;
-      appearance: none;
-      height: 4px;
-      background: #e5e5e5;
-      border-radius: 2px;
-      outline: none;
-      cursor: pointer;
-    }
-
-    .yr-slider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      background: #1a1a1a;
-      cursor: pointer;
-    }
-
-    .yr-slider::-moz-range-thumb {
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      background: #1a1a1a;
-      cursor: pointer;
-      border: none;
-    }
-
-    .yr-val { font-size: 0.9rem; font-weight: 700; color: #1a1a1a; min-width: 82px; text-align: right; }
-
+    .yr-slider { flex: 1; -webkit-appearance: none; appearance: none; height: 4px; background: #e5e5e5; border-radius: 2px; outline: none; cursor: pointer; }
+    .yr-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #1a1a1a; cursor: pointer; }
+    .yr-slider::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: #1a1a1a; cursor: pointer; border: none; }
+    .yr-val { font-size: 0.9rem; font-weight: 700; min-width: 82px; text-align: right; }
     .yr-ticks { display: flex; justify-content: space-between; font-size: 0.5rem; color: #bbb; font-weight: 600; margin-top: -2px; }
-
-    .btn-guess {
-      width: 100%;
-      padding: 10px;
-      font-family: inherit;
-      font-size: 0.9rem;
-      font-weight: 700;
-      color: #fff;
-      background: #1a1a1a;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background 0.15s;
-    }
-
+    .btn-guess { width: 100%; padding: 10px; font-family: inherit; font-size: 0.9rem; font-weight: 700; color: #fff; background: #1a1a1a; border: none; border-radius: 6px; cursor: pointer; }
     .btn-guess:hover:not(:disabled) { background: #333; }
     .btn-guess:disabled { opacity: 0.3; cursor: not-allowed; }
 
-    /* ─── Result ─── */
     #result { flex-direction: column; background: #faf9f7; }
-
-    .res-top {
-      text-align: center;
-      padding: 14px 20px;
-      background: #fff;
-      border-bottom: 1px solid #eee;
-    }
-
+    .res-top { text-align: center; padding: 14px 20px; background: #fff; border-bottom: 1px solid #eee; }
     .res-name { font-size: 1.1rem; font-weight: 700; }
     .res-loc { font-size: 0.78rem; color: #888; margin-top: 2px; }
-
     .res-mid { display: flex; flex: 1; overflow: hidden; }
-    #resultMap { flex: 1; }
-
-    .res-side {
-      width: 320px;
-      padding: 18px;
-      background: #fff;
-      border-left: 1px solid #eee;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      overflow-y: auto;
-    }
-
-    .score-box {
-      text-align: center;
-      padding: 16px;
-      border: 1px solid #eee;
-      border-radius: 8px;
-    }
-
+    .res-globe { flex: 1; background: #0a0a14; position: relative; overflow: hidden; }
+    .res-side { width: 320px; padding: 18px; background: #fff; border-left: 1px solid #eee; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; }
+    .score-box { text-align: center; padding: 16px; border: 1px solid #eee; border-radius: 8px; }
     .score-box-label { font-size: 0.58rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #aaa; margin-bottom: 2px; }
-    .score-box-val { font-size: 2rem; font-weight: 700; color: #1a1a1a; }
-
-    .stats { }
-
-    .st {
-      display: flex;
-      justify-content: space-between;
-      padding: 8px 0;
-      border-bottom: 1px solid #f0f0f0;
-      font-size: 0.78rem;
-    }
-
+    .score-box-val { font-size: 2rem; font-weight: 700; }
+    .st { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 0.78rem; }
     .st:last-child { border-bottom: none; }
     .st-k { color: #999; }
     .st-v { font-weight: 700; }
-
-    .btn-next {
-      margin-top: auto;
-      padding: 11px;
-      font-family: inherit;
-      font-size: 0.9rem;
-      font-weight: 700;
-      color: #fff;
-      background: #1a1a1a;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
+    .btn-next { margin-top: auto; padding: 11px; font-family: inherit; font-size: 0.9rem; font-weight: 700; color: #fff; background: #1a1a1a; border: none; border-radius: 6px; cursor: pointer; }
     .btn-next:hover { background: #333; }
 
-    /* ─── Final ─── */
-    #final {
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 32px 24px;
-      background: #faf9f7;
-      overflow-y: auto;
-    }
-
+    #final { flex-direction: column; align-items: center; justify-content: center; padding: 32px 24px; overflow-y: auto; }
     .f-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #aaa; margin-bottom: 6px; }
-    .f-score { font-size: clamp(2.5rem, 7vw, 4rem); font-weight: 700; color: #1a1a1a; margin-bottom: 2px; }
+    .f-score { font-size: clamp(2.5rem, 7vw, 4rem); font-weight: 700; margin-bottom: 2px; }
     .f-max { font-size: 0.85rem; color: #aaa; margin-bottom: 28px; }
-
     .f-list { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 6px; margin-bottom: 28px; }
-
-    .f-row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 11px 14px;
-      background: #fff;
-      border: 1px solid #eee;
-      border-radius: 8px;
-    }
-
+    .f-row { display: flex; align-items: center; gap: 12px; padding: 11px 14px; background: #fff; border: 1px solid #eee; border-radius: 8px; }
     .f-n { font-size: 0.72rem; font-weight: 700; color: #aaa; width: 20px; text-align: center; }
     .f-info { flex: 1; }
     .f-name { font-size: 0.8rem; font-weight: 600; }
     .f-loc { font-size: 0.65rem; color: #999; }
-    .f-pts { font-size: 0.88rem; font-weight: 700; color: #1a1a1a; }
-
-    .leaflet-container { background: #f5f3ef; }
-    .leaflet-control-attribution { display: none !important; }
+    .f-pts { font-size: 0.88rem; font-weight: 700; }
 
     @media (max-width: 700px) {
-      .tray { width: 260px; right: 8px; bottom: 8px; }
-      .map-box { height: 160px; }
-      .map-box.big { height: 280px; }
+      .tray { width: 240px; right: 8px; bottom: 8px; }
+      .tray:hover, .tray.pinned { width: 100vw; right: 0; bottom: 0; border-radius: 10px 10px 0 0; }
       .res-mid { flex-direction: column; }
       .res-side { width: 100%; border-left: none; border-top: 1px solid #eee; }
     }
@@ -395,7 +144,7 @@
       <div class="how-item"><div class="how-n">3</div><div class="how-t">Pick the year</div></div>
       <div class="how-item"><div class="how-n">4</div><div class="how-t">See your score</div></div>
     </div>
-    <button class="btn-go" onclick="startGame()">Start game</button>
+    <button class="btn" onclick="startGame()">Start game</button>
   </div>
 
   <div id="loading" class="screen">
@@ -413,10 +162,9 @@
       <div class="hud-chip" id="hudScore">0 pts</div>
     </div>
     <div class="video-bg"><video id="gameVideo" autoplay loop muted playsinline></video></div>
-    <div class="tray">
-      <div class="map-box" id="mapBox">
-        <button class="expand-btn" id="expandBtn" onclick="toggleMap()">&#x2922;</button>
-        <div id="guessMap"></div>
+    <div class="tray" id="tray">
+      <div class="globe-box" id="globeBox">
+        <button class="pin-btn" id="pinBtn" onclick="togglePin()">&#x1F4CC;</button>
       </div>
       <div class="controls">
         <div class="yr-row">
@@ -436,13 +184,13 @@
       <div class="res-loc" id="resPlace"></div>
     </div>
     <div class="res-mid">
-      <div id="resultMap"></div>
+      <div class="res-globe" id="resGlobeBox"></div>
       <div class="res-side">
         <div class="score-box">
           <div class="score-box-label">Round Score</div>
           <div class="score-box-val" id="resScore">0</div>
         </div>
-        <div class="stats">
+        <div>
           <div class="st"><span class="st-k">Location</span><span class="st-v" id="resLocScore">0 / 5,000</span></div>
           <div class="st"><span class="st-k">Distance</span><span class="st-v" id="resDist">0 km</span></div>
           <div class="st"><span class="st-k">Time</span><span class="st-v" id="resTimeScore">0 / 5,000</span></div>
@@ -461,13 +209,17 @@
     <div class="f-score" id="finalScore">0</div>
     <div class="f-max">out of 50,000</div>
     <div class="f-list" id="finalList"></div>
-    <button class="btn-go" onclick="startGame()">Play again</button>
+    <button class="btn" onclick="startGame()">Play again</button>
   </div>
 
   <script>
     let gameId, currentRound = 0, totalScore = 0;
-    let guessMap, guessMarker, resultMap;
-    let yearTouched = false, mapBig = false;
+    let guessGlobe, resultGlobe;
+    let guessPin = null, yearTouched = false, trayPinned = false;
+
+    const EARTH_DAY = 'https://unpkg.com/three-globe@2.35.1/example/img/earth-blue-marble.jpg';
+    const EARTH_TOPO = 'https://unpkg.com/three-globe@2.35.1/example/img/earth-topology.png';
+    const NIGHT_SKY = '//unpkg.com/three-globe@2.35.1/example/img/night-sky.png';
 
     const FACTS = [
       "The Great Pyramid was the tallest structure on Earth for 3,800 years.",
@@ -490,11 +242,7 @@
       document.getElementById(id).classList.add('active');
     }
 
-    function fmtYear(y) {
-      if (y < 0) return Math.abs(y) + ' BC';
-      if (y === 0) return '1 BC';
-      return y + ' AD';
-    }
+    function fmtYear(y) { return y < 0 ? Math.abs(y) + ' BC' : y === 0 ? '1 BC' : y + ' AD'; }
 
     let factTimer;
     function startFacts() {
@@ -502,24 +250,81 @@
       let i = Math.floor(Math.random() * FACTS.length);
       el.textContent = FACTS[i]; el.style.opacity = 1;
       factTimer = setInterval(() => {
-        i = (i + 1) % FACTS.length;
-        el.style.opacity = 0;
+        i = (i + 1) % FACTS.length; el.style.opacity = 0;
         setTimeout(() => { el.textContent = FACTS[i]; el.style.opacity = 1; }, 250);
       }, 5000);
     }
     function stopFacts() { clearInterval(factTimer); }
 
-    function toggleMap() {
-      mapBig = !mapBig;
-      document.getElementById('mapBox').classList.toggle('big', mapBig);
-      document.getElementById('expandBtn').textContent = mapBig ? '\u2716' : '\u2922';
-      setTimeout(() => { if (guessMap) guessMap.invalidateSize(); }, 300);
+    function togglePin() {
+      trayPinned = !trayPinned;
+      document.getElementById('tray').classList.toggle('pinned', trayPinned);
+      setTimeout(() => { if (guessGlobe) resizeGuessGlobe(); }, 350);
     }
+
+    function resizeGuessGlobe() {
+      const c = document.getElementById('globeBox');
+      if (guessGlobe) guessGlobe.width(c.clientWidth).height(c.clientHeight);
+    }
+
+    function applyYearTint(year) {
+      if (!guessGlobe) return;
+      const t = Math.max(0, Math.min(1, (year + 3000) / 5025));
+      const saturation = t;
+      const scene = guessGlobe.scene();
+      if (scene && scene.children) {
+        scene.traverse(child => {
+          if (child.isMesh && child.material && child.material.color) {
+            child.material.color.setHSL(0, 0, 0.5 + saturation * 0.5);
+          }
+        });
+      }
+      const container = document.getElementById('globeBox');
+      const gray = 1 - saturation;
+      container.style.filter = `grayscale(${(gray * 100).toFixed(0)}%)`;
+    }
+
+    function initGuessGlobe() {
+      const container = document.getElementById('globeBox');
+      if (guessGlobe) {
+        guessGlobe.pointsData([]);
+        guessPin = null;
+        resizeGuessGlobe();
+        return;
+      }
+
+      guessGlobe = Globe()
+        .globeImageUrl(EARTH_DAY)
+        .bumpImageUrl(EARTH_TOPO)
+        .backgroundImageUrl(NIGHT_SKY)
+        .width(container.clientWidth)
+        .height(container.clientHeight)
+        .atmosphereColor('#888')
+        .atmosphereAltitude(0.15)
+        .pointsData([])
+        .pointAltitude(0.05)
+        .pointRadius(0.5)
+        .pointColor(() => '#e74c3c')
+        .onGlobeClick(({ lat, lng }) => {
+          guessPin = { lat, lng };
+          guessGlobe.pointsData([{ lat, lng }]);
+          updateBtn();
+        })
+        (container);
+
+      guessGlobe.controls().autoRotate = true;
+      guessGlobe.controls().autoRotateSpeed = 0.4;
+      guessGlobe.pointOfView({ lat: 20, lng: 0, altitude: 2.2 });
+
+      new ResizeObserver(() => resizeGuessGlobe()).observe(container);
+    }
+
+    // ─── Game Flow ───
 
     let pendingRound = 0;
 
     async function startGame() {
-      totalScore = 0; currentRound = 0; yearTouched = false; guessMarker = null;
+      totalScore = 0; currentRound = 0; yearTouched = false; guessPin = null; trayPinned = false;
       show('loading');
       document.getElementById('loadingSpinner').style.display = 'block';
       document.getElementById('loadTitle').textContent = 'Generating your scene...';
@@ -564,79 +369,53 @@
     }
 
     function showPlaying(rn, url) {
-      currentRound = rn; yearTouched = false;
+      currentRound = rn; yearTouched = false; guessPin = null; trayPinned = false;
       document.getElementById('hudRound').textContent = 'Round ' + (rn + 1) + ' of 5';
       document.getElementById('hudScore').textContent = totalScore.toLocaleString() + ' pts';
-      const v = document.getElementById('gameVideo');
-      v.src = url; v.play().catch(() => {});
+      const v = document.getElementById('gameVideo'); v.src = url; v.play().catch(() => {});
       document.getElementById('yearSlider').value = 1000;
       document.getElementById('yearDisplay').textContent = '1000 AD';
-      const btn = document.getElementById('guessBtn');
-      btn.disabled = true; btn.textContent = 'Place a pin first';
-      mapBig = false;
-      document.getElementById('mapBox').classList.remove('big');
-      document.getElementById('expandBtn').textContent = '\u2922';
+      document.getElementById('guessBtn').disabled = true;
+      document.getElementById('guessBtn').textContent = 'Place a pin first';
+      document.getElementById('tray').classList.remove('pinned');
+      document.getElementById('globeBox').style.filter = '';
       show('playing');
 
       setTimeout(() => {
-        if (!guessMap) {
-          guessMap = L.map('guessMap', { center: [20, 0], zoom: 2, minZoom: 1, maxZoom: 18, worldCopyJump: true, zoomControl: false });
-          L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-            subdomains: 'abcd', maxZoom: 20
-          }).addTo(guessMap);
-          L.control.zoom({ position: 'topright' }).addTo(guessMap);
-          guessMap.on('click', onMapClick);
-        } else {
-          guessMap.setView([20, 0], 2);
-        }
-        if (guessMarker) { guessMap.removeLayer(guessMarker); guessMarker = null; }
-        guessMap.invalidateSize();
-      }, 150);
-    }
-
-    function onMapClick(e) {
-      if (guessMarker) guessMarker.setLatLng(e.latlng);
-      else {
-        guessMarker = L.marker(e.latlng, {
-          icon: L.divIcon({
-            className: '',
-            html: '<div style="width:20px;height:20px;background:#1a1a1a;border:3px solid #fff;border-radius:50%;box-shadow:0 1px 6px rgba(0,0,0,0.3);transform:translate(-10px,-10px)"></div>',
-            iconSize: [0, 0]
-          })
-        }).addTo(guessMap);
-      }
-      updateBtn();
+        initGuessGlobe();
+        applyYearTint(1000);
+      }, 200);
     }
 
     document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('yearSlider').addEventListener('input', function () {
         yearTouched = true;
-        document.getElementById('yearDisplay').textContent = fmtYear(parseInt(this.value));
+        const val = parseInt(this.value);
+        document.getElementById('yearDisplay').textContent = fmtYear(val);
+        applyYearTint(val);
         updateBtn();
       });
     });
 
     function updateBtn() {
-      const ok = guessMarker && yearTouched;
+      const ok = guessPin && yearTouched;
       const b = document.getElementById('guessBtn');
       b.disabled = !ok;
-      b.textContent = ok ? 'Submit guess' : (!guessMarker ? 'Place a pin first' : 'Now pick a year');
+      b.textContent = ok ? 'Submit guess' : (!guessPin ? 'Place a pin first' : 'Now pick a year');
     }
 
     async function submitGuess() {
-      if (!guessMarker || !yearTouched) return;
-      const b = document.getElementById('guessBtn');
-      b.disabled = true; b.textContent = '...';
-      const ll = guessMarker.getLatLng();
+      if (!guessPin || !yearTouched) return;
+      const b = document.getElementById('guessBtn'); b.disabled = true; b.textContent = '...';
       const yr = parseInt(document.getElementById('yearSlider').value);
       try {
         const r = await fetch(`/api/game/${gameId}/round/${currentRound}/guess`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ year: yr, lat: ll.lat, lng: ll.lng })
+          body: JSON.stringify({ year: yr, lat: guessPin.lat, lng: guessPin.lng })
         });
         const d = await r.json();
         totalScore = d.gameTotalScore;
-        showResult(d, ll.lat, ll.lng, yr);
+        showResult(d, guessPin.lat, guessPin.lng, yr);
       } catch { b.disabled = false; b.textContent = 'Submit guess'; }
     }
 
@@ -654,18 +433,53 @@
       document.getElementById('nextBtn').textContent = currentRound >= 4 ? 'See results' : 'Next round';
       show('result');
 
-      if (resultMap) { resultMap.remove(); resultMap = null; }
-      resultMap = L.map('resultMap', { center: [0, 0], zoom: 2, worldCopyJump: true, zoomControl: false });
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { subdomains: 'abcd', maxZoom: 20 }).addTo(resultMap);
+      setTimeout(() => initResultGlobe(gLat, gLng, d.correctLat, d.correctLng), 150);
+    }
 
-      const gi = L.divIcon({ className: '', html: '<div style="width:16px;height:16px;background:#1a1a1a;border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.3);transform:translate(-8px,-8px)"></div>', iconSize: [0, 0] });
-      const ci = L.divIcon({ className: '', html: '<div style="width:16px;height:16px;background:#16a34a;border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.3);transform:translate(-8px,-8px)"></div>', iconSize: [0, 0] });
+    function initResultGlobe(gLat, gLng, cLat, cLng) {
+      const container = document.getElementById('resGlobeBox');
+      container.innerHTML = '';
 
-      L.marker([gLat, gLng], { icon: gi }).addTo(resultMap).bindPopup('<b>Your guess</b><br>' + fmtYear(gYear));
-      L.marker([d.correctLat, d.correctLng], { icon: ci }).addTo(resultMap).bindPopup('<b>' + d.correctEventName + '</b><br>' + d.correctLocationName);
-      L.polyline([[gLat, gLng], [d.correctLat, d.correctLng]], { color: '#dc2626', weight: 2, dashArray: '6,5', opacity: 0.7 }).addTo(resultMap);
-      resultMap.fitBounds([[gLat, gLng], [d.correctLat, d.correctLng]], { padding: [50, 50], maxZoom: 8 });
-      setTimeout(() => resultMap.invalidateSize(), 100);
+      resultGlobe = Globe()
+        .globeImageUrl(EARTH_DAY)
+        .bumpImageUrl(EARTH_TOPO)
+        .backgroundImageUrl(NIGHT_SKY)
+        .width(container.clientWidth)
+        .height(container.clientHeight)
+        .atmosphereColor('#888')
+        .atmosphereAltitude(0.15)
+        .arcsData([{
+          startLat: gLat, startLng: gLng, endLat: cLat, endLng: cLng,
+          color: ['#e74c3c', '#2ecc71']
+        }])
+        .arcColor('color')
+        .arcDashLength(0.4)
+        .arcDashGap(0.2)
+        .arcDashAnimateTime(2500)
+        .arcStroke(1)
+        .pointsData([
+          { lat: gLat, lng: gLng, color: '#e74c3c', size: 0.5 },
+          { lat: cLat, lng: cLng, color: '#2ecc71', size: 0.7 }
+        ])
+        .pointAltitude(0.05)
+        .pointRadius('size')
+        .pointColor('color')
+        .ringsData([{ lat: cLat, lng: cLng, maxR: 4, propagationSpeed: 2, repeatPeriod: 1200, color: () => 'rgba(46, 204, 113, 0.6)' }])
+        .ringColor('color')
+        .ringMaxRadius('maxR')
+        .ringPropagationSpeed('propagationSpeed')
+        .ringRepeatPeriod('repeatPeriod')
+        (container);
+
+      resultGlobe.pointOfView({ lat: gLat, lng: gLng, altitude: 2.5 });
+
+      setTimeout(() => {
+        resultGlobe.pointOfView({ lat: cLat, lng: cLng, altitude: 1.8 }, 2000);
+      }, 800);
+
+      new ResizeObserver(() => {
+        if (resultGlobe) resultGlobe.width(container.clientWidth).height(container.clientHeight);
+      }).observe(container);
     }
 
     async function nextRound() {
