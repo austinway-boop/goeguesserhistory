@@ -321,6 +321,15 @@ app.post('/api/game/:id/round/:num/guess', (req, res) => {
   if (roundNum < 0 || roundNum >= game.rounds.length) return res.status(400).json({ error: 'Invalid round' });
 
   const round = game.rounds[roundNum];
+  if (round.guess) return res.json({
+    locationScore: round.score.locationScore, timeScore: round.score.timeScore, totalScore: round.score.totalScore,
+    distanceKm: round.score.distanceKm, yearDiff: round.score.yearDiff,
+    correctYear: round.event.year, correctLat: round.event.lat, correctLng: round.event.lng,
+    correctLocationName: round.event.locationName, correctEventName: round.event.eventName,
+    correctEra: round.event.era,
+    gameTotalScore: game.totalScore, gameComplete: game.currentRound >= game.rounds.length
+  });
+
   const { year, lat, lng } = req.body;
   if (year == null || lat == null || lng == null) return res.status(400).json({ error: 'year, lat, lng required' });
 

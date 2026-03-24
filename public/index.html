@@ -294,6 +294,7 @@
     let gameId, currentRound = 0, totalScore = 0;
     let guessMap, guessMarker, resultMap;
     let yearTouched = false;
+    let submitting = false;
     let timerInterval = null;
     let timeLeft = 0;
     const ROUND_TIME = 30;
@@ -333,28 +334,21 @@
     }
 
     function autoSubmit() {
+      if (submitting) return;
+      stopTimer();
       playTone(200, 0.4, 'sawtooth', 0.1);
-      if (guessMarker && yearTouched) {
-        submitGuess();
-      } else {
-        submitDefault();
-      }
-    }
-
-    async function submitDefault() {
+      submitting = true;
       const lat = guessMarker ? guessMarker.getLatLng().lat : 0;
       const lng = guessMarker ? guessMarker.getLatLng().lng : 0;
       const yr = yearTouched ? parseInt(document.getElementById('yearSlider').value) : 1000;
       const b = document.getElementById('guessBtn'); b.disabled = true; b.textContent = "Time's up!";
-      try {
-        const r = await fetch(`/api/game/${gameId}/round/${currentRound}/guess`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ year: yr, lat, lng })
-        });
-        const d = await r.json();
+      fetch(`/api/game/${gameId}/round/${currentRound}/guess`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ year: yr, lat, lng })
+      }).then(r => r.json()).then(d => {
         totalScore = d.gameTotalScore;
         showResult(d, lat, lng, yr);
-      } catch {}
+      }).catch(() => { submitting = false; });
     }
 
     const FACTS = [
@@ -532,7 +526,7 @@
     }
 
     function showPlaying(rn, url) {
-      currentRound = rn; yearTouched = false;
+      currentRound = rn; yearTouched = false; submitting = false;
       document.getElementById('hudRound').textContent = 'Round ' + (rn + 1) + ' of 5';
       document.getElementById('hudScore').textContent = totalScore.toLocaleString() + ' pts';
       const v = document.getElementById('gameVideo'); v.src = url; v.play().catch(() => {});
@@ -589,7 +583,8 @@
     }
 
     async function submitGuess() {
-      if (!guessMarker || !yearTouched) return;
+      if (!guessMarker || !yearTouched || submitting) return;
+      submitting = true;
       stopTimer();
       sfxSubmit();
       const b = document.getElementById('guessBtn'); b.disabled = true; b.textContent = '...';
@@ -603,7 +598,7 @@
         const d = await r.json();
         totalScore = d.gameTotalScore;
         showResult(d, ll.lat, ll.lng, yr);
-      } catch { b.disabled = false; b.textContent = 'Submit guess'; }
+      } catch { submitting = false; b.disabled = false; b.textContent = 'Submit guess'; }
     }
 
     function showResult(d, gLat, gLng, gYear) {
